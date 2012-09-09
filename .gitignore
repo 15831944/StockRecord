@@ -1,0 +1,11 @@
+*.log
+*.pch
+*.sdf
+*.bak
+*.ncb
+*.ilk
+[Bb]in
+[Dd]ebug*/
+[Rr]elease*/
+ipch/
+*.opensdf
