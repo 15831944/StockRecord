@@ -224,7 +224,14 @@ CGridDefaultCell::CGridDefaultCell()
     SetFont(&lf);
 #else // not CE
     NONCLIENTMETRICS ncm;
-    ncm.cbSize = sizeof(NONCLIENTMETRICS);
+	
+	/** 
+	 * NOTE: If you run app in WinVista or higher, 
+	 * uncomment this statement, and comment the statement after it.
+	 */
+	// ncm.cbSize = sizeof(NONCLIENTMETRICS);
+	ncm.cbSize = sizeof(NONCLIENTMETRICS) - sizeof(ncm.iPaddedBorderWidth);
+
     VERIFY(SystemParametersInfo(SPI_GETNONCLIENTMETRICS, sizeof(NONCLIENTMETRICS), &ncm, 0));
     SetFont(&(ncm.lfMessageFont));
 #endif

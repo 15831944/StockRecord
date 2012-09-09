@@ -4,6 +4,8 @@
 
 #pragma once
 
+#include "GridCtrl_src/GridCtrl.h"
+#include "e:\vc++\stockapps\stockrecord\gridctrl_src\gridctrl.h"
 
 // CStockRecordDlg ¶Ô»°¿ò
 class CStockRecordDlg : public CDialogEx
@@ -29,4 +31,7 @@ protected:
 	afx_msg void OnPaint();
 	afx_msg HCURSOR OnQueryDragIcon();
 	DECLARE_MESSAGE_MAP()
+
+private:
+	CGridCtrl m_GridCtrl;
 };

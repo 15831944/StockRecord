@@ -57,6 +57,7 @@ CStockRecordDlg::CStockRecordDlg(CWnd* pParent /*=NULL*/)
 void CStockRecordDlg::DoDataExchange(CDataExchange* pDX)
 {
 	CDialogEx::DoDataExchange(pDX);
+	DDX_GridControl(pDX, IDC_GRID, m_GridCtrl);
 }
 
 BEGIN_MESSAGE_MAP(CStockRecordDlg, CDialogEx)

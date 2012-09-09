@@ -37,12 +37,24 @@
 
 #include <afxcontrolbars.h>     // 功能区和控件条的 MFC 支持
 
+ 
+
+// Specifies that the minimum required platform is Windows XP.
+// #ifdef WINVER	
+// #undef WINVER
+// #define WINVER 0x0500          // Win2k
+// #else
+// #define WINVER 0x0500          // Win2k
+// #endif
 
 
-
-
-
-
+// #ifdef _WIN32_WINNT            // 指定要求的最低平台是 Windows Vista。
+// #undef _WIN32_WINNT
+// #define _WIN32_WINNT 0x0500     // 将此值更改为相应的值，以适用于 Windows 的其他版本。
+// #else
+// #define _WIN32_WINNT 0x0500     // 将此值更改为相应的值，以适用于 Windows 的其他版本。
+// #endif
+ 
 
 
 #ifdef _UNICODE
