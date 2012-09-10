@@ -98,7 +98,26 @@ BOOL CStockRecordDlg::OnInitDialog()
 	SetIcon(m_hIcon, TRUE);			// 设置大图标
 	SetIcon(m_hIcon, FALSE);		// 设置小图标
 
-	// TODO: 在此添加额外的初始化代码
+	/* Some features of grid. */
+	m_GridCtrl.SetFixedColumnCount(1);
+	m_GridCtrl.SetFixedRowCount(1);
+	// TODO: Set fixed bk & text color.
+	// m_GridCtrl.SetFixedBkColor()
+
+	m_GridCtrl.SetColumnResize(TRUE);		// Column can resize.
+	m_GridCtrl.SetRowResize(FALSE);			// Row cannot resize.
+	m_GridCtrl.SetAutoSizeStyle(GVS_BOTH);	// Auto size
+	m_GridCtrl.SetEditable(FALSE);			// Cannot edit
+
+	// TODO: in OnInitDialog() 
+	/**
+	 * 1. Read records in stock_buy table. 
+	 * 2. Get how many columns and row of the data.
+	 * 3. Set the number of grid's column and row.
+	 * 4. Set the data.
+	 */
+
+	//m_GridCtrl.ShowWindow(SW_HIDE);			// If no data, make grid invisible.
 
 	return TRUE;  // 除非将焦点设置到控件，否则返回 TRUE
 }
