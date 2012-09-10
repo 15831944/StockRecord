@@ -7,6 +7,7 @@
 #include "StockRecordDlg.h"
 #include "afxdialogex.h"
 
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif
@@ -50,6 +51,7 @@ END_MESSAGE_MAP()
 
 CStockRecordDlg::CStockRecordDlg(CWnd* pParent /*=NULL*/)
 	: CDialogEx(CStockRecordDlg::IDD, pParent)
+	, m_pDatabase(NULL)
 {
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
 }
@@ -64,6 +66,8 @@ BEGIN_MESSAGE_MAP(CStockRecordDlg, CDialogEx)
 	ON_WM_SYSCOMMAND()
 	ON_WM_PAINT()
 	ON_WM_QUERYDRAGICON()
+	ON_WM_CLOSE()
+	ON_WM_DESTROY()
 END_MESSAGE_MAP()
 
 
@@ -98,9 +102,14 @@ BOOL CStockRecordDlg::OnInitDialog()
 	SetIcon(m_hIcon, TRUE);			// 设置大图标
 	SetIcon(m_hIcon, FALSE);		// 设置小图标
 
+	SetupDBTableNames();
+	OpenDatabase();
+
 	/* Some features of grid. */
 	m_GridCtrl.SetFixedColumnCount(1);
 	m_GridCtrl.SetFixedRowCount(1);
+	m_GridCtrl.SetColumnCount(7);
+	m_GridCtrl.SetRowCount();//
 	// TODO: Set fixed bk & text color.
 	// m_GridCtrl.SetFixedBkColor()
 
@@ -110,14 +119,14 @@ BOOL CStockRecordDlg::OnInitDialog()
 	m_GridCtrl.SetEditable(FALSE);			// Cannot edit
 
 	// TODO: in OnInitDialog() 
-	/**
+	/** Same as ReadHoldRecord
 	 * 1. Read records in stock_buy table. 
 	 * 2. Get how many columns and row of the data.
 	 * 3. Set the number of grid's column and row.
 	 * 4. Set the data.
 	 */
 
-	//m_GridCtrl.ShowWindow(SW_HIDE);			// If no data, make grid invisible.
+	//m_GridCtrl.ShowWindow(SW_HIDE);		// If no data, make grid invisible.
 
 	return TRUE;  // 除非将焦点设置到控件，否则返回 TRUE
 }
@@ -171,3 +180,71 @@ HCURSOR CStockRecordDlg::OnQueryDragIcon()
 	return static_cast<HCURSOR>(m_hIcon);
 }
 
+
+int CStockRecordDlg::ReadStockHoldRecords(void)
+{
+	
+	return 0;
+}
+
+
+int CStockRecordDlg::SetupDBTableNames(void)
+{
+	m_strDBName.assign("StockRecord.db");
+	m_strBuyTableName.assign("stock_buy");
+	m_StrHoldTableName.assign("stock_hold");
+	m_strSellTableName.assign("stock_sell");
+	m_strMoneyTableName.assign("stock_money");
+	return OK;
+}
+
+int CStockRecordDlg::OpenDatabase(void)
+{
+	if (m_strDBName.empty()) {
+		MessageBox("Database'a name is empty.", "Oops");
+		return BAD_DB_TABLE_NAME;
+	}
+
+	if (m_pDatabase != NULL) {
+		MessageBox("Database is already opened.", "Tip");
+		return OK;
+	}
+
+	// TODO: Open DB in read-only by using _v2 and ...
+	int ret = 0;
+	ret = sqlite3_open(m_strDBName.c_str(), &m_pDatabase);
+
+	if (ret != SQLITE_OK) {
+		MessageBox("Open database error.", "Error");
+		return ret;
+	}
+
+	return OK;
+}
+
+int CStockRecordDlg::CloseDatabase( void )
+{
+	if (!m_pDatabase)
+		return OK;
+	
+	int ret = 0;
+	ret = sqlite3_close(m_pDatabase);
+	if (ret == SQLITE_OK) {
+		m_pDatabase = NULL;
+		return SQLITE_OK;
+	}
+	return ret;
+}
+
+void CStockRecordDlg::OnClose(void)
+{
+	CDialogEx::OnClose();
+}
+
+void CStockRecordDlg::OnDestroy()
+{
+	CDialogEx::OnDestroy();
+
+	/* Close database */
+	CloseDatabase();
+}

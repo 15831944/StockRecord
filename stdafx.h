@@ -37,7 +37,10 @@
 
 #include <afxcontrolbars.h>     // 功能区和控件条的 MFC 支持
 
- 
+// Added by loxin
+#include "ErrorCode.h"
+#include <string>
+using namespace std;
 
 // Specifies that the minimum required platform is Windows XP.
 // #ifdef WINVER	

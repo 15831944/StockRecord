@@ -90,6 +90,9 @@
     <ClInclude Include="NewCellTypes\GridCellNumeric.h">
       <Filter>头文件\New Cell Headers</Filter>
     </ClInclude>
+    <ClInclude Include="ErrorCode.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="StockRecord.cpp">
