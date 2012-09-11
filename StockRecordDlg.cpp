@@ -52,6 +52,7 @@ END_MESSAGE_MAP()
 CStockRecordDlg::CStockRecordDlg(CWnd* pParent /*=NULL*/)
 	: CDialogEx(CStockRecordDlg::IDD, pParent)
 	, m_pDatabase(NULL)
+	, m_nDBStatus(-1)
 {
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
 }
@@ -200,40 +201,59 @@ int CStockRecordDlg::SetupDBTableNames(void)
 
 int CStockRecordDlg::OpenDatabase(void)
 {
+	if (m_pDatabase && m_nDBStatus == DB_STATUS_OPENED) {	// already opened.
+		MessageBox("Database is already opened.", "Tip");
+		return OK;
+	}
+
 	if (m_strDBName.empty()) {
 		MessageBox("Database'a name is empty.", "Oops");
 		return BAD_DB_TABLE_NAME;
 	}
 
-	if (m_pDatabase != NULL) {
-		MessageBox("Database is already opened.", "Tip");
-		return OK;
-	}
-
-	// TODO: Open DB in read-only by using _v2 and ...
 	int ret = 0;
-	ret = sqlite3_open(m_strDBName.c_str(), &m_pDatabase);
-
-	if (ret != SQLITE_OK) {
-		MessageBox("Open database error.", "Error");
+	CString msg("");
+	ret = sqlite3_open_v2(m_strDBName.c_str(), &m_pDatabase, SQLITE_OPEN_READONLY, NULL);
+	if (ret == SQLITE_OK) {
+		m_nDBStatus = DB_STATUS_OPENED;
 		return ret;
 	}
 
-	return OK;
+	/**
+	 *	Open Read-only database failed, because db does not exist.
+	 *  Now create a new database.
+	 */
+	m_nDBStatus = DB_STATUS_DOESNOT_EXIST;
+	ret = sqlite3_open_v2(m_strDBName.c_str(), &m_pDatabase,
+		SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE, NULL);
+	if (ret != SQLITE_OK) {
+		msg.Format("Cannot create & open database : %s.", m_strDBName.c_str());
+		return ret;
+	}
+
+	/**
+	 *	Initiate new database's tables.
+	 */
+	m_nDBStatus = DB_STATUS_OPENED;
+	ret = InitDatabaseTables();
+
+	return ret;
 }
 
 int CStockRecordDlg::CloseDatabase( void )
 {
-	if (!m_pDatabase)
+	if (!m_pDatabase && m_nDBStatus != DB_STATUS_OPENED)
 		return OK;
 	
 	int ret = 0;
-	ret = sqlite3_close(m_pDatabase);
-	if (ret == SQLITE_OK) {
-		m_pDatabase = NULL;
-		return SQLITE_OK;
+	ret = sqlite3_close_v2(m_pDatabase);
+	if (ret != SQLITE_OK) {
+		return ret;
 	}
-	return ret;
+
+	m_nDBStatus = DB_STATUS_CLOSED;
+	m_pDatabase = NULL;
+	return OK;
 }
 
 void CStockRecordDlg::OnClose(void)
@@ -244,7 +264,70 @@ void CStockRecordDlg::OnClose(void)
 void CStockRecordDlg::OnDestroy()
 {
 	CDialogEx::OnDestroy();
+	
+	CloseDatabase();		/* Close database */
+}
 
-	/* Close database */
-	CloseDatabase();
+int CStockRecordDlg::InitDatabaseTables( void )
+{
+	if (!m_pDatabase || m_nDBStatus != DB_STATUS_OPENED) {
+		return ERR;
+	}
+
+	int ret = 0;
+	char* errmsg = NULL;
+	string sql("");
+
+	/**
+	 *	Init stock_buy table.
+	 */
+	sql.clear();
+	sql = sql 
+		+ "CREATE TABLE "
+		+ m_strBuyTableName 
+		+ "(	id INTEGER PRIMARY KEY AUTOINCREMENT, "
+		+ "		code		VARCHAR(6) NOT NULL, "
+		+ "		name		VARCHAR(10), "
+		+ "		buy_price	FLOAT, "
+		+ "		buy_amount	INTEGER, "
+		+ "		buy_date	DATE "
+		+ ")";
+	ret = sqlite3_exec(m_pDatabase, sql.c_str(), NULL, NULL, &errmsg);
+	if (ret != SQLITE_OK) {
+		MessageBox("Cannot create table into database.");
+		return ret;
+	}
+
+	/**
+	 *	Init stock_hold table.
+	 */
+	sql.clear();
+	sql = sql
+		+ "CREATE TABLE "
+		+ m_StrHoldTableName
+		+ "(	id INTEGER PRIMARY KEY AUTOINCREMENT, "
+		+ "		code		VARCHAR(6) NOT NULL, "
+		+ "		name		VARCHAR(10), "
+		+ "		buy_price	FLOAT, "
+		+ "		hold_price	FLOAT, "
+		+ "		hold_amount	INTEGER, "
+		+ "		even_price	FLOAT "
+		+ ")";
+	ret = sqlite3_exec(m_pDatabase, sql.c_str(), NULL, NULL, &errmsg);
+	if (ret != SQLITE_OK) {
+		MessageBox("Cannot create table into database.");
+		return ret;
+	}
+
+	/**
+	 *	Init stock_sell table.
+	 */
+
+	/**
+	 *	Init stock_money table.
+	 */
+
+	MessageBox("Database does not exist.\nIts tables has been inited.");
+
+	return ret;
 }

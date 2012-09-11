@@ -50,18 +50,22 @@ public:
 	/** Close database, must be called when dialog goes away. */
 	int CloseDatabase(void);
 
+	/** Initiate database's talbes, should be called only once. */
+	int InitDatabaseTables(void);
+
 private:
 	
 	CGridCtrl m_GridCtrl;
 
 	/** names of database and tables */
-	string m_strDBName;
-	string m_strBuyTableName;
-	string m_StrHoldTableName;
-	string m_strSellTableName;
-	string m_strMoneyTableName;
+	string	m_strDBName;
+	string	m_strBuyTableName;
+	string	m_StrHoldTableName;
+	string	m_strSellTableName;
+	string	m_strMoneyTableName;
 
 	sqlite3* m_pDatabase;
+	int		m_nDBStatus;
 public:
 	
 	
