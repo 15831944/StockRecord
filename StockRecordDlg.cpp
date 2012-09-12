@@ -106,13 +106,13 @@ BOOL CStockRecordDlg::OnInitDialog()
 	SetupDBTableNames();
 	OpenDatabase();
 
-	/* Some features of grid. */
+	/* Some features of grid's column and row. */
 	m_GridCtrl.SetFixedColumnCount(1);
 	m_GridCtrl.SetFixedRowCount(1);
 	m_GridCtrl.SetColumnCount(7);
 	m_GridCtrl.SetRowCount();//
 	// TODO: Set fixed bk & text color.
-	// m_GridCtrl.SetFixedBkColor()
+	m_GridCtrl.SetFixedBkColor(RGB(0xFF, 0xFF, 0x00));
 
 	m_GridCtrl.SetColumnResize(TRUE);		// Column can resize.
 	m_GridCtrl.SetRowResize(FALSE);			// Row cannot resize.
@@ -237,6 +237,9 @@ int CStockRecordDlg::OpenDatabase(void)
 	m_nDBStatus = DB_STATUS_OPENED;
 	ret = InitDatabaseTables();
 
+	if (ret == SQLITE_OK)
+		MessageBox("Database does not exist.\nIts tables has been inited.");
+
 	return ret;
 }
 
@@ -274,6 +277,8 @@ int CStockRecordDlg::InitDatabaseTables( void )
 		return ERR;
 	}
 
+	ASSERT(IsTableNamesValid());
+
 	int ret = 0;
 	char* errmsg = NULL;
 	string sql("");
@@ -285,7 +290,7 @@ int CStockRecordDlg::InitDatabaseTables( void )
 	sql = sql 
 		+ "CREATE TABLE "
 		+ m_strBuyTableName 
-		+ "(	id INTEGER PRIMARY KEY AUTOINCREMENT, "
+		+ " (	id INTEGER PRIMARY KEY AUTOINCREMENT, "
 		+ "		code		VARCHAR(6) NOT NULL, "
 		+ "		name		VARCHAR(10), "
 		+ "		buy_price	FLOAT, "
@@ -305,7 +310,7 @@ int CStockRecordDlg::InitDatabaseTables( void )
 	sql = sql
 		+ "CREATE TABLE "
 		+ m_StrHoldTableName
-		+ "(	id INTEGER PRIMARY KEY AUTOINCREMENT, "
+		+ " (	id INTEGER PRIMARY KEY AUTOINCREMENT, "
 		+ "		code		VARCHAR(6) NOT NULL, "
 		+ "		name		VARCHAR(10), "
 		+ "		buy_price	FLOAT, "
@@ -322,12 +327,56 @@ int CStockRecordDlg::InitDatabaseTables( void )
 	/**
 	 *	Init stock_sell table.
 	 */
+	sql.clear();
+	sql = sql 
+		+ "CREATE TABLE "
+		+ m_strSellTableName
+		+ " (	id INTEGER PRIMARY KEY AUTOINCREMENT, "
+		+ "		code		VARCHAR(6) NOT NULL, "
+		+ "		name		VARCHAR(10), "
+		+ "		buy_price	FLOAT, "
+		+ "		sell_price	FLOAT, "
+		+ "		sell_amount	INTEGER, "
+		+ "		sell_date	DATE, "
+		+ "		even_price	FLOAT, "
+		+ "		each_earn	FLOAT, "
+		+ "		total_earn	FLOAT "
+		+ ")";
+	ret = sqlite3_exec(m_pDatabase, sql.c_str(), NULL, NULL, &errmsg);
+	if (ret != SQLITE_OK) {
+		MessageBox("Cannot create table into database.");
+		return ret;
+	}
 
 	/**
 	 *	Init stock_money table.
 	 */
-
-	MessageBox("Database does not exist.\nIts tables has been inited.");
+	sql.clear();
+	sql = sql
+		+ "CREATE TABLE "
+		+ m_strMoneyTableName
+		+ " (	id INTEGER PRIMARY KEY AUTOINCREMENT, "
+		+ "		each_money		FLOAT, "
+		+ "		money_date		DATE, "
+		+ "		remark			VACHAR, "
+		+ "		total_money		FLOAT "
+		+ ")";
+	ret = sqlite3_exec(m_pDatabase, sql.c_str(), NULL, NULL, &errmsg);
+	if (ret != SQLITE_OK) {
+		MessageBox("Cannot create table into database.");
+		return ret;
+	}
 
 	return ret;
+}
+
+BOOL CStockRecordDlg::IsTableNamesValid( void )
+{
+	if (m_strBuyTableName.empty() || m_StrHoldTableName.empty()
+		|| m_StrHoldTableName.empty() || m_strMoneyTableName.empty()) {
+
+		return FALSE;
+	}
+
+	return TRUE;	
 }

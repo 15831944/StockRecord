@@ -15,5 +15,6 @@
 #define DB_STATUS_OPENED				0x20
 #define DB_STATUS_CLOSED				0x21
 #define DB_STATUS_DOESNOT_EXIST			0x22
+#define DB_STATUS_NOT_INITED			0x23
 
 #endif

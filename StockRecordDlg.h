@@ -36,7 +36,9 @@ protected:
 	afx_msg void OnDestroy();
 	DECLARE_MESSAGE_MAP()
 
-	
+private:
+	BOOL IsTableNamesValid(void);
+
 public:
 	/** Read records from tables. */
 	int ReadStockHoldRecords(void);
@@ -44,13 +46,13 @@ public:
 	/** Set up database and tables' names, must be called at startup. */
 	int SetupDBTableNames(void);
 
-	/** Open database, better be called at startup. */
+	/** Open database, if it doesn't exist, create & init database. */
 	int OpenDatabase(void);
 
 	/** Close database, must be called when dialog goes away. */
 	int CloseDatabase(void);
 
-	/** Initiate database's talbes, should be called only once. */
+	/** Initiate database's tables, should be called only once. */
 	int InitDatabaseTables(void);
 
 private:
