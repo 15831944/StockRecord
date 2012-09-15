@@ -107,25 +107,20 @@ BOOL CStockRecordDlg::OnInitDialog()
 	OpenDatabase();
 
 	/* Some features of grid's column and row. */
-	m_GridCtrl.SetFixedColumnCount(1);
-	m_GridCtrl.SetFixedRowCount(1);
-	m_GridCtrl.SetColumnCount(7);
-	m_GridCtrl.SetRowCount();//
-	// TODO: Set fixed bk & text color.
+	//m_GridCtrl.SetFixedColumnCount(1);
+	//m_GridCtrl.SetFixedRowCount(1);
+	//m_GridCtrl.SetColumnCount(7);
+	//m_GridCtrl.SetRowCount();//
+	// TODO: Set fixed bkgd & text color.
 	m_GridCtrl.SetFixedBkColor(RGB(0xFF, 0xFF, 0x00));
 
 	m_GridCtrl.SetColumnResize(TRUE);		// Column can resize.
-	m_GridCtrl.SetRowResize(FALSE);			// Row cannot resize.
+	m_GridCtrl.SetRowResize(TRUE);			// Row cannot resize.
 	m_GridCtrl.SetAutoSizeStyle(GVS_BOTH);	// Auto size
 	m_GridCtrl.SetEditable(FALSE);			// Cannot edit
 
-	// TODO: in OnInitDialog() 
-	/** Same as ReadHoldRecord
-	 * 1. Read records in stock_buy table. 
-	 * 2. Get how many columns and row of the data.
-	 * 3. Set the number of grid's column and row.
-	 * 4. Set the data.
-	 */
+	// TODO: in OnInitDialog() call some func
+	QeuryRecordsByTableName(m_StrHoldTableName.c_str());
 
 	//m_GridCtrl.ShowWindow(SW_HIDE);		// If no data, make grid invisible.
 
@@ -182,10 +177,92 @@ HCURSOR CStockRecordDlg::OnQueryDragIcon()
 }
 
 
-int CStockRecordDlg::ReadStockHoldRecords(void)
+/**
+ *	Use sqlite3_get_table() to get all data in the table
+ *  tableName - which table to read data from.
+ */
+int CStockRecordDlg::QeuryRecordsByTableName(const char* tableName)
 {
+	if (!tableName || strlen(tableName) == 0) {
+		MessageBox("Table name is empty.", "Tips");
+		return BAD_DB_TABLE_NAME;
+	}
+
+	if (!m_pDatabase && m_nDBStatus != DB_STATUS_OPENED) {
+		return DB_STATUS_CLOSED;
+	}
 	
-	return 0;
+	int ret = 0;
+	CString msg("");
+	int nCol = 0;
+	int nRow = 0;
+	char** result = NULL;
+	char* errmsg = NULL;
+	string sql("");
+
+	sql.clear();
+	sql = sql + "SELECT * FROM " + tableName;
+	
+	/**
+	 *	Query all records by using sqlite3_get_table() func.
+	 */
+	ret = sqlite3_get_table(m_pDatabase, sql.c_str(), &result, &nRow, &nCol, &errmsg);
+	if (ret != SQLITE_OK) {
+		msg.Format(_T("Cannot open table %s"), tableName);
+		MessageBox(msg, "Error!");
+		return ret;
+	}
+
+	/**
+	 *	Init Grid with column and row count.
+	 *
+	 *  1. Fixed row 0 is to display name of fields. Which should be mapped 
+	 *  into Chinese column names according its English names.
+	 *
+	 *  2. Fixed column 0 is to display the sequence number that are only valid 
+	 *  in the grid's view. Data in 'id' column in database won't be displayed.
+	 *  That is, the 'id' from database will be replaced with 'seqNo' in view.
+	 */
+	m_GridCtrl.DeleteAllItems();		// delete all to display new data.
+	m_GridCtrl.SetColumnCount(nCol);
+	m_GridCtrl.SetRowCount(nRow + 1);	// + 1 to display the field names.
+	m_GridCtrl.SetFixedRowCount(1);
+	m_GridCtrl.SetFixedColumnCount(1);
+
+	/**
+	 *	Show name of fields, before 'nCol'.
+	 */
+	for (int colIdx = 0; colIdx < nCol; ++colIdx) {
+		// TODO: Map column names (in English) to Chinese words to display.
+		// More specific to display if 'id'.
+		char* data = result[colIdx];
+		m_GridCtrl.SetItemText(0, colIdx, data);	// result[0] is "id".
+	}
+
+	/**
+	 *	Show data, data is starting from 'nCol' of 'result'.
+	 *  Data in column 0 is the ids, which are no need to display.
+	 *  Display 'seqNo' in grid view instead of 'id' from database.
+	 */
+	// ERROR: Sqlite data (UTF-8) has no support for Chinese words (GB2312).
+	int seqNo = 1;	// sqe_no is started from 1.
+	for (int rowIdx = 1; rowIdx < nRow + 1; ++rowIdx) {
+		for (int colIdx = 0; colIdx < nCol; ++colIdx) {
+
+			if (colIdx == 0) {		// Display 'seqNo' in column 0.
+				char strSeqNo[8] = "";
+				_itoa_s(seqNo++, strSeqNo, 10);
+				m_GridCtrl.SetItemText(rowIdx, colIdx, strSeqNo);
+				break;
+			}
+
+			char* data = result[rowIdx * nCol + colIdx];
+			m_GridCtrl.SetItemText(rowIdx, colIdx, data);
+		}
+	}
+
+	sqlite3_free_table(result);
+	return OK;
 }
 
 
@@ -207,7 +284,7 @@ int CStockRecordDlg::OpenDatabase(void)
 	}
 
 	if (m_strDBName.empty()) {
-		MessageBox("Database'a name is empty.", "Oops");
+		MessageBox("Database's name is empty.", "Oops");
 		return BAD_DB_TABLE_NAME;
 	}
 
@@ -227,7 +304,7 @@ int CStockRecordDlg::OpenDatabase(void)
 	ret = sqlite3_open_v2(m_strDBName.c_str(), &m_pDatabase,
 		SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE, NULL);
 	if (ret != SQLITE_OK) {
-		msg.Format("Cannot create & open database : %s.", m_strDBName.c_str());
+		msg.Format(_T("Cannot create & open database : %s."), m_strDBName.c_str());
 		return ret;
 	}
 

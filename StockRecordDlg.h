@@ -41,7 +41,7 @@ private:
 
 public:
 	/** Read records from tables. */
-	int ReadStockHoldRecords(void);
+	int QeuryRecordsByTableName(const char* tableName);
 
 	/** Set up database and tables' names, must be called at startup. */
 	int SetupDBTableNames(void);

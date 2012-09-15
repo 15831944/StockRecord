@@ -2,8 +2,8 @@
  *	Define error code of stock record app.
  */
 
-#ifndef ERROR_CODE_H
-#define ERROR_CODE_H
+#ifndef STOCK_RECORD_ERROR_CODE_H
+#define STOCK_RECORD_ERROR_CODE_H
 
 #define OK					0
 /** General error, my be specified in details in future. */
