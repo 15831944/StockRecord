@@ -93,6 +93,9 @@
     <ClInclude Include="ErrorCode.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="ChineseCodeLib.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="StockRecord.cpp">
@@ -136,6 +139,9 @@
     </ClCompile>
     <ClCompile Include="NewCellTypes\GridURLCell.cpp">
       <Filter>源文件\New Cell Srcs</Filter>
+    </ClCompile>
+    <ClCompile Include="ChineseCodeLib.cpp">
+      <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

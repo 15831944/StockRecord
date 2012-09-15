@@ -107,13 +107,7 @@ BOOL CStockRecordDlg::OnInitDialog()
 	OpenDatabase();
 
 	/* Some features of grid's column and row. */
-	//m_GridCtrl.SetFixedColumnCount(1);
-	//m_GridCtrl.SetFixedRowCount(1);
-	//m_GridCtrl.SetColumnCount(7);
-	//m_GridCtrl.SetRowCount();//
-	// TODO: Set fixed bkgd & text color.
 	m_GridCtrl.SetFixedBkColor(RGB(0xFF, 0xFF, 0x00));
-
 	m_GridCtrl.SetColumnResize(TRUE);		// Column can resize.
 	m_GridCtrl.SetRowResize(TRUE);			// Row cannot resize.
 	m_GridCtrl.SetAutoSizeStyle(GVS_BOTH);	// Auto size
@@ -175,6 +169,7 @@ HCURSOR CStockRecordDlg::OnQueryDragIcon()
 {
 	return static_cast<HCURSOR>(m_hIcon);
 }
+
 
 
 /**
@@ -244,8 +239,7 @@ int CStockRecordDlg::QeuryRecordsByTableName(const char* tableName)
 	 *  Data in column 0 is the ids, which are no need to display.
 	 *  Display 'seqNo' in grid view instead of 'id' from database.
 	 */
-	// ERROR: Sqlite data (UTF-8) has no support for Chinese words (GB2312).
-	int seqNo = 1;	// sqe_no is started from 1.
+	int seqNo = 1;					// sqe_no is started from 1.
 	for (int rowIdx = 1; rowIdx < nRow + 1; ++rowIdx) {
 		for (int colIdx = 0; colIdx < nCol; ++colIdx) {
 
@@ -253,11 +247,13 @@ int CStockRecordDlg::QeuryRecordsByTableName(const char* tableName)
 				char strSeqNo[8] = "";
 				_itoa_s(seqNo++, strSeqNo, 10);
 				m_GridCtrl.SetItemText(rowIdx, colIdx, strSeqNo);
-				break;
+				continue;
 			}
 
+			string strOut;
 			char* data = result[rowIdx * nCol + colIdx];
-			m_GridCtrl.SetItemText(rowIdx, colIdx, data);
+			string strData = CChineseCodeLib::UTF8ToGB2312(data);
+			m_GridCtrl.SetItemText(rowIdx, colIdx, strData.c_str());
 		}
 	}
 

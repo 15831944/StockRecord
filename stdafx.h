@@ -39,6 +39,7 @@
 
 // Added by loxin
 #include "ErrorCode.h"
+#include "ChineseCodeLib.h"
 #include <string>
 using namespace std;
 
