@@ -96,6 +96,9 @@
     <ClInclude Include="ChineseCodeLib.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="FieldNamesMap.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="StockRecord.cpp">
@@ -141,6 +144,9 @@
       <Filter>源文件\New Cell Srcs</Filter>
     </ClCompile>
     <ClCompile Include="ChineseCodeLib.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="FieldNamesMap.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

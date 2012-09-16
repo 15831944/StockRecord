@@ -381,7 +381,7 @@ std::string CChineseCodeLib::GB2312ToUTF8( const char* str )
 	WCHAR *strSrc = NULL;
 	TCHAR *szRes = NULL;
 
-	// TODO: Look dettails of these functions. The args.
+	// TODO: Look details of these functions. The args.
 	int i = MultiByteToWideChar(CP_ACP, 0, str, -1, NULL, 0);
 	strSrc = new WCHAR[i+1];
 	MultiByteToWideChar(CP_ACP, 0, str, -1, strSrc, i);

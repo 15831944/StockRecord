@@ -8,6 +8,8 @@
 extern "C" {
 	#include <sqlite3.h>	// SQLite support.
 };
+#include <vector>
+using namespace std;
 
 // CStockRecordDlg ¶Ô»°¿ò
 class CStockRecordDlg : public CDialogEx
@@ -34,14 +36,21 @@ protected:
 	afx_msg HCURSOR OnQueryDragIcon();
 	afx_msg void OnClose(void);
 	afx_msg void OnDestroy();
+	afx_msg void OnMenuHoldRecord();
+	afx_msg void OnMenuBuyRecord();
+	afx_msg void OnMenuSellRecord();
+	afx_msg void OnMenuMoneyRecord();
 	DECLARE_MESSAGE_MAP()
 
 private:
 	BOOL IsTableNamesValid(void);
 
+	/** Get the left top item's data to display according opened table now */
+	void SetLeftTopItemData(void);
+
 public:
 	/** Read records from tables. */
-	int QeuryRecordsByTableName(const char* tableName);
+	int QueryRecordsByTableName(const char* tableName);
 
 	/** Set up database and tables' names, must be called at startup. */
 	int SetupDBTableNames(void);
@@ -68,7 +77,34 @@ private:
 
 	sqlite3* m_pDatabase;
 	int		m_nDBStatus;
+
+	enum RECORDTABLE{		// which table is displayed now.
+		T_STOCKBUY = 0,		// stock_buy table
+		T_STOCKHOLD,		// stock_hold table
+		T_STOCKSELL,		// stock_sell table
+		T_STOCKMONEY		// stock_money table
+	} m_enumRecordTable;
+
+	/**
+	 *	Store table's ids, the seqNo is the index of vector.
+	 */
+	vector<int> m_vecStockBuyIds;
+	vector<int> m_vecStockHoldIds;
+	vector<int> m_vecStockSellIds;
+	vector<int> m_vecStockMoneyIds;
+
+	/** Clear related vector according by m_enumRecordTable to do a new display. */
+	void ClearRecordIds(void);
+
+	/**
+	 *	Store record id. The 'seqNo' is sequence number, which can be 
+	 *  determined by the index of vector. This will cause gird can not order.
+	 *  This method may not be good, but it can work in this condition.
+	 */
+	void StoreRecordId(int id);
+
 public:
 	
 	
+	afx_msg void OnBnClickedExit();
 };

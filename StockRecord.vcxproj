@@ -102,6 +102,7 @@
   <ItemGroup>
     <ClInclude Include="ChineseCodeLib.h" />
     <ClInclude Include="ErrorCode.h" />
+    <ClInclude Include="FieldNamesMap.h" />
     <ClInclude Include="GridCtrl_src\CellRange.h" />
     <ClInclude Include="GridCtrl_src\GridCell.h" />
     <ClInclude Include="GridCtrl_src\GridCellBase.h" />
@@ -123,6 +124,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ChineseCodeLib.cpp" />
+    <ClCompile Include="FieldNamesMap.cpp" />
     <ClCompile Include="GridCtrl_src\GridCell.cpp" />
     <ClCompile Include="GridCtrl_src\GridCellBase.cpp" />
     <ClCompile Include="GridCtrl_src\GridCtrl.cpp" />

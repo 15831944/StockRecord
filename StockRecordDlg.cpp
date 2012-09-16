@@ -7,6 +7,7 @@
 #include "StockRecordDlg.h"
 #include "afxdialogex.h"
 
+#include "FieldNamesMap.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -29,6 +30,7 @@ public:
 // й╣ож
 protected:
 	DECLARE_MESSAGE_MAP()
+public:
 };
 
 CAboutDlg::CAboutDlg() : CDialogEx(CAboutDlg::IDD)
@@ -69,6 +71,11 @@ BEGIN_MESSAGE_MAP(CStockRecordDlg, CDialogEx)
 	ON_WM_QUERYDRAGICON()
 	ON_WM_CLOSE()
 	ON_WM_DESTROY()
+	ON_COMMAND(ID_MENU_HOLD_RECORD, &CStockRecordDlg::OnMenuHoldRecord)
+	ON_COMMAND(ID_MENU_BUY_RECORD, &CStockRecordDlg::OnMenuBuyRecord)
+	ON_COMMAND(ID_MENU_SELL_RECORD, &CStockRecordDlg::OnMenuSellRecord)
+	ON_COMMAND(ID_MENU_MONEY_RECORD, &CStockRecordDlg::OnMenuMoneyRecord)
+	ON_BN_CLICKED(IDC_BT_EXIT, &CStockRecordDlg::OnBnClickedExit)
 END_MESSAGE_MAP()
 
 
@@ -111,10 +118,9 @@ BOOL CStockRecordDlg::OnInitDialog()
 	m_GridCtrl.SetColumnResize(TRUE);		// Column can resize.
 	m_GridCtrl.SetRowResize(TRUE);			// Row cannot resize.
 	m_GridCtrl.SetAutoSizeStyle(GVS_BOTH);	// Auto size
-	m_GridCtrl.SetEditable(FALSE);			// Cannot edit
+	m_GridCtrl.SetEditable(FALSE);			// Cannot edit	
 
-	// TODO: in OnInitDialog() call some func
-	QeuryRecordsByTableName(m_StrHoldTableName.c_str());
+	OnMenuHoldRecord();						// Query hold record when startup.
 
 	//m_GridCtrl.ShowWindow(SW_HIDE);		// If no data, make grid invisible.
 
@@ -170,13 +176,12 @@ HCURSOR CStockRecordDlg::OnQueryDragIcon()
 	return static_cast<HCURSOR>(m_hIcon);
 }
 
-
-
 /**
- *	Use sqlite3_get_table() to get all data in the table
+ *	Use sqlite3_get_table() to get all data in the table.
+ *  This function MUST be called by OnMenu*Record() functions.
  *  tableName - which table to read data from.
  */
-int CStockRecordDlg::QeuryRecordsByTableName(const char* tableName)
+int CStockRecordDlg::QueryRecordsByTableName(const char* tableName)
 {
 	if (!tableName || strlen(tableName) == 0) {
 		MessageBox("Table name is empty.", "Tips");
@@ -199,7 +204,7 @@ int CStockRecordDlg::QeuryRecordsByTableName(const char* tableName)
 	sql = sql + "SELECT * FROM " + tableName;
 	
 	/**
-	 *	Query all records by using sqlite3_get_table() func.
+	 *	1. Query all records by using sqlite3_get_table() func.
 	 */
 	ret = sqlite3_get_table(m_pDatabase, sql.c_str(), &result, &nRow, &nCol, &errmsg);
 	if (ret != SQLITE_OK) {
@@ -211,10 +216,10 @@ int CStockRecordDlg::QeuryRecordsByTableName(const char* tableName)
 	/**
 	 *	Init Grid with column and row count.
 	 *
-	 *  1. Fixed row 0 is to display name of fields. Which should be mapped 
+	 *  Fixed row 0 is to display name of fields. Which should be mapped 
 	 *  into Chinese column names according its English names.
 	 *
-	 *  2. Fixed column 0 is to display the sequence number that are only valid 
+	 *  Fixed column 0 is to display the sequence number that are only valid 
 	 *  in the grid's view. Data in 'id' column in database won't be displayed.
 	 *  That is, the 'id' from database will be replaced with 'seqNo' in view.
 	 */
@@ -224,18 +229,41 @@ int CStockRecordDlg::QeuryRecordsByTableName(const char* tableName)
 	m_GridCtrl.SetFixedRowCount(1);
 	m_GridCtrl.SetFixedColumnCount(1);
 
+	/* Clear corresponding m_vecStock*Ids to make a new display. */
+	ClearRecordIds();
+
 	/**
-	 *	Show name of fields, before 'nCol'.
+	 *	2. Show name of fields, before 'nCol' of result.
 	 */
 	for (int colIdx = 0; colIdx < nCol; ++colIdx) {
-		// TODO: Map column names (in English) to Chinese words to display.
-		// More specific to display if 'id'.
+				
 		char* data = result[colIdx];
-		m_GridCtrl.SetItemText(0, colIdx, data);	// result[0] is "id".
+		if (!data || strlen(data) == 0)
+			return ERR;
+
+		if (colIdx == 0) {		// Do not display left-top "id" string.
+			SetLeftTopItemData();
+			continue;
+		}
+
+		/* Convert English field name to Chinese name. */
+		string strOutName("");
+		strOutName = FieldNamesMap::GetChNameByEnName(data);
+		m_GridCtrl.SetItemText(0, colIdx, strOutName.c_str());
+
+		/**
+		 *	Set gird's column's width according strOutName's width.
+		 *  Maybe have no effect because setting of data's font format.
+		 */
+		CSize sz;
+		CClientDC dc(this);
+		sz = dc.GetTextExtent(strOutName.c_str(), strOutName.length());
+		if (sz.cx > 0)
+			m_GridCtrl.SetColumnWidth(colIdx, (int)sz.cx + 5);
 	}
 
 	/**
-	 *	Show data, data is starting from 'nCol' of 'result'.
+	 *	3. Show data, data is starting from 'nCol' of 'result'.
 	 *  Data in column 0 is the ids, which are no need to display.
 	 *  Display 'seqNo' in grid view instead of 'id' from database.
 	 */
@@ -243,24 +271,37 @@ int CStockRecordDlg::QeuryRecordsByTableName(const char* tableName)
 	for (int rowIdx = 1; rowIdx < nRow + 1; ++rowIdx) {
 		for (int colIdx = 0; colIdx < nCol; ++colIdx) {
 
-			if (colIdx == 0) {		// Display 'seqNo' in column 0.
+			if (colIdx == 0) {		// Display 'seqNo' in col 0, instead of 'id'
 				char strSeqNo[8] = "";
 				_itoa_s(seqNo++, strSeqNo, 10);
 				m_GridCtrl.SetItemText(rowIdx, colIdx, strSeqNo);
+
+				/**
+				 *	Store 'id' value to later operation, like removing record.
+				 *  Make a relation between 'id' and 'seqNo'.
+				 *  Which will cause that the gird can not order by column.
+				 */
+				char* idStr = result[rowIdx * nCol + colIdx];
+				int id = -1;
+				if (idStr)
+					id = atoi(idStr);
+				if (id >= 0)
+					StoreRecordId(id);
 				continue;
 			}
 
-			string strOut;
+			/* Display date, Convert UTF8 word to GB2312 format. */
+			string strOut;			
 			char* data = result[rowIdx * nCol + colIdx];
 			string strData = CChineseCodeLib::UTF8ToGB2312(data);
 			m_GridCtrl.SetItemText(rowIdx, colIdx, strData.c_str());
 		}
 	}
 
-	sqlite3_free_table(result);
+	sqlite3_free_table(result);		// Never forget to free result table.
+	result = NULL;
 	return OK;
 }
-
 
 int CStockRecordDlg::SetupDBTableNames(void)
 {
@@ -387,7 +428,7 @@ int CStockRecordDlg::InitDatabaseTables( void )
 		+ "		code		VARCHAR(6) NOT NULL, "
 		+ "		name		VARCHAR(10), "
 		+ "		buy_price	FLOAT, "
-		+ "		hold_price	FLOAT, "
+		+ "		hold_cost	FLOAT, "
 		+ "		hold_amount	INTEGER, "
 		+ "		even_price	FLOAT "
 		+ ")";
@@ -453,3 +494,107 @@ BOOL CStockRecordDlg::IsTableNamesValid( void )
 
 	return TRUE;	
 }
+
+void CStockRecordDlg::OnMenuHoldRecord()
+{
+	m_enumRecordTable = T_STOCKHOLD;
+	QueryRecordsByTableName(m_StrHoldTableName.c_str());
+}
+
+void CStockRecordDlg::OnMenuBuyRecord()
+{
+	m_enumRecordTable = T_STOCKBUY;
+	QueryRecordsByTableName(m_strBuyTableName.c_str());
+}
+
+void CStockRecordDlg::OnMenuSellRecord()
+{
+	m_enumRecordTable = T_STOCKSELL;
+	QueryRecordsByTableName(m_strSellTableName.c_str());
+}
+
+void CStockRecordDlg::OnMenuMoneyRecord()
+{
+	m_enumRecordTable = T_STOCKMONEY;
+	QueryRecordsByTableName(m_strMoneyTableName.c_str());
+}
+
+void CStockRecordDlg::OnBnClickedExit()
+{
+	CDialogEx::OnCancel();
+}
+
+void CStockRecordDlg::SetLeftTopItemData( void )
+{
+	string str("");
+
+	switch (m_enumRecordTable) {
+	case T_STOCKBUY:
+		str.assign("BUY");
+		break;
+	case T_STOCKHOLD:
+		str.assign("HOLD");
+		break;
+	case T_STOCKSELL:
+		str.assign("SELL");
+		break;
+	case T_STOCKMONEY:
+		str.assign("MONEY");
+		break;
+	default:
+		str.assign("ERR");
+		break;
+	}
+
+	// Set data of (0, 0) item.
+	m_GridCtrl.SetItemText(0, 0, str.c_str());
+
+	// Set column width.
+	CSize sz;
+	CClientDC dc(this);
+	sz = dc.GetTextExtent(str.c_str(), str.length());
+	if (sz.cx > 0)
+		m_GridCtrl.SetColumnWidth(0, (int)sz.cx);
+}
+
+void CStockRecordDlg::ClearRecordIds( void )
+{
+	switch (m_enumRecordTable) {
+	case T_STOCKBUY:
+		m_vecStockBuyIds.clear();
+		break;
+	case T_STOCKHOLD:
+		m_vecStockHoldIds.clear();
+		break;
+	case T_STOCKSELL:
+		m_vecStockSellIds.clear();
+		break;
+	case T_STOCKMONEY:
+		m_vecStockMoneyIds.clear();
+		break;
+	default:
+		break;
+	}
+}
+
+void CStockRecordDlg::StoreRecordId( int id )
+{
+	switch (m_enumRecordTable) {
+	case T_STOCKBUY:
+		m_vecStockBuyIds.push_back(id);
+		break;
+	case T_STOCKHOLD:
+		m_vecStockHoldIds.push_back(id);
+		break;
+	case T_STOCKSELL:
+		m_vecStockSellIds.push_back(id);
+		break;
+	case T_STOCKMONEY:
+		m_vecStockMoneyIds.push_back(id);
+		break;
+	default:
+		break;
+	}
+}
+
+// TODO: Add function to delete selected records.
