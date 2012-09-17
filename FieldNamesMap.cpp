@@ -43,6 +43,10 @@ int FieldNamesMap::InitFieldNamesMap( void )
 	return ret;
 }
 
+/**
+ *	If Chinese names are used in table's fields, the map from EnName to ChName
+ *  won't be necessary any more.
+ */
 std::string FieldNamesMap::GetChNameByEnName( string enName )
 {
 	if (!m_isMapInited) {		// Map has not been inted.
@@ -59,7 +63,7 @@ std::string FieldNamesMap::GetChNameByEnName( string enName )
 
 	it = m_FieldNamesMap.find(enName);
 	if (it == m_FieldNamesMap.end())	// No related value.
-		return "";
+		return enName;
 
 	return it->second;
 }

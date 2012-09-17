@@ -77,6 +77,7 @@ BEGIN_MESSAGE_MAP(CStockRecordDlg, CDialogEx)
 	ON_COMMAND(ID_MENU_MONEY_RECORD, &CStockRecordDlg::OnMenuMoneyRecord)
 	ON_BN_CLICKED(IDC_BT_EXIT, &CStockRecordDlg::OnBnClickedExit)
 	ON_NOTIFY(NM_RCLICK, IDC_GRID, &CStockRecordDlg::OnGridRClick)
+	ON_COMMAND_RANGE(IDM_STOCKBUY_REMOVE, IDM_STOCKMONEY_REMOVE, &CStockRecordDlg::OnMenuRemoveRecord)
 END_MESSAGE_MAP()
 
 
@@ -177,6 +178,114 @@ HCURSOR CStockRecordDlg::OnQueryDragIcon()
 	return static_cast<HCURSOR>(m_hIcon);
 }
 
+/*
+ *	Set gird data queried from sqlite3_get_table.
+ *  nRow - How many rows of the data.
+ *  nCol - How many columns of the data.
+ *  result - All the queried data are stored in memory pointed by result.
+ */
+int CStockRecordDlg::SetGirdData( int nRow, int nCol, char** result )
+{
+	// TODO: Show info when there is no data in the database
+	if (nRow <= 0 || nCol <= 0 || !result) {
+		m_GridCtrl.DeleteAllItems();
+		m_GridCtrl.ShowWindow(SW_HIDE);
+		return ERR;
+	}
+	
+	/**
+	 *	Init Grid with column and row count.
+	 *
+	 *  Fixed row 0 is to display name of fields. Which should be mapped 
+	 *  into Chinese column names according its English names.
+	 *
+	 *  Fixed column 0 is to display the sequence number that are only valid 
+	 *  in the grid's view. Data in 'id' column in database won't be displayed.
+	 *  That is, the 'id' from database will be replaced with 'seqNo' in view.
+	 */
+	m_GridCtrl.DeleteAllItems();		// delete all to display new data.
+	m_GridCtrl.ShowWindow(SW_SHOW);
+	m_GridCtrl.SetColumnCount(nCol);
+	m_GridCtrl.SetRowCount(nRow + 1);	// + 1 to display the field names.
+	m_GridCtrl.SetFixedRowCount(1);
+	m_GridCtrl.SetFixedColumnCount(1);
+
+	// TODO: How to set font.
+
+	/* Clear corresponding m_vecStock*Ids to prepare to make a new display. */
+	ClearRecordIds();
+
+	/**
+	 *	1. Show name of fields, before 'nCol' of result.
+	 */
+	for (int colIdx = 0; colIdx < nCol; ++colIdx) {
+				
+		char* data = result[colIdx];
+		if (!data || strlen(data) == 0)
+			return ERR;
+
+		/* 1.1 Set left top item */
+		if (colIdx == 0) {			// Do not display left-top "id" string.
+			SetLeftTopItemData();
+			continue;
+		}
+
+		/*  1.2 Show field names. Convert English field name to Chinese name. */
+		string strOutName("");
+		strOutName = FieldNamesMap::GetChNameByEnName(data);
+		m_GridCtrl.SetItemText(0, colIdx, strOutName.c_str());
+
+		/**
+		 *	1.2.1 Set gird's column's width according strOutName's width.
+		 *  Maybe have no effect because setting of data's font format.
+		 */
+		CSize sz;
+		CClientDC dc(this);
+		sz = dc.GetTextExtent(strOutName.c_str(), strOutName.length());
+		if (sz.cx > 0)
+			m_GridCtrl.SetColumnWidth(colIdx, (int)sz.cx - 5);
+	}
+
+	/**
+	 *	2. Show data, data is starting from 'nCol' of 'result'.
+	 *  Data in column 0 is the ids, which are no need to display.
+	 *  Display 'seqNo' in grid view instead of 'id' from database.
+	 */
+	int seqNo = 1;					// sqe_no is started from 1.
+	for (int rowIdx = 1; rowIdx < nRow + 1; ++rowIdx) {
+		for (int colIdx = 0; colIdx < nCol; ++colIdx) {
+
+			/* 2.1 Display 'seqNo' in col 0, instead of 'id'. */
+			if (colIdx == 0) {
+				char strSeqNo[8] = "";
+				_itoa_s(seqNo++, strSeqNo, 10);
+				m_GridCtrl.SetItemText(rowIdx, colIdx, strSeqNo);
+
+				/**
+				 *	Store 'id' value to later operation, like removing record.
+				 *  Make a relation between 'id' and 'seqNo'.
+				 *  Which will cause that the gird can not order by column.
+				 */
+				char* idStr = result[rowIdx * nCol + colIdx];
+				int id = -1;
+				if (idStr)
+					id = atoi(idStr);
+				if (id >= 0)
+					StoreRecordId(id);
+				continue;
+			}
+
+			/* 2.2 Display data, Convert UTF8 word to GB2312 format. */
+			string strOut;			
+			char* data = result[rowIdx * nCol + colIdx];
+			string strData = CChineseCodeLib::UTF8ToGB2312(data);
+			m_GridCtrl.SetItemText(rowIdx, colIdx, strData.c_str());
+		}
+	}
+
+	return OK;
+}
+
 /**
  *	Use sqlite3_get_table() to get all data in the table.
  *  This function MUST be called by OnMenu*Record() functions.
@@ -209,96 +318,18 @@ int CStockRecordDlg::QueryRecordsByTableName(const char* tableName)
 	 */
 	ret = sqlite3_get_table(m_pDatabase, sql.c_str(), &result, &nRow, &nCol, &errmsg);
 	if (ret != SQLITE_OK) {
-		msg.Format(_T("Cannot open table %s"), tableName);
-		MessageBox(msg, "Error!");
+		if (errmsg) {
+			CString str;
+			str.Format("Cannot open table %s. %s",tableName ,errmsg);
+			MessageBox(str, "ERROR!");
+			sqlite3_free(errmsg);
+			errmsg = NULL;
+		}
 		return ret;
 	}
 
-	/**
-	 *	Init Grid with column and row count.
-	 *
-	 *  Fixed row 0 is to display name of fields. Which should be mapped 
-	 *  into Chinese column names according its English names.
-	 *
-	 *  Fixed column 0 is to display the sequence number that are only valid 
-	 *  in the grid's view. Data in 'id' column in database won't be displayed.
-	 *  That is, the 'id' from database will be replaced with 'seqNo' in view.
-	 */
-	m_GridCtrl.DeleteAllItems();		// delete all to display new data.
-	m_GridCtrl.SetColumnCount(nCol);
-	m_GridCtrl.SetRowCount(nRow + 1);	// + 1 to display the field names.
-	m_GridCtrl.SetFixedRowCount(1);
-	m_GridCtrl.SetFixedColumnCount(1);
-
-	/* Clear corresponding m_vecStock*Ids to make a new display. */
-	ClearRecordIds();
-
-	/**
-	 *	2. Show name of fields, before 'nCol' of result.
-	 */
-	for (int colIdx = 0; colIdx < nCol; ++colIdx) {
-				
-		char* data = result[colIdx];
-		if (!data || strlen(data) == 0)
-			return ERR;
-
-		if (colIdx == 0) {		// Do not display left-top "id" string.
-			SetLeftTopItemData();
-			continue;
-		}
-
-		/* Convert English field name to Chinese name. */
-		string strOutName("");
-		strOutName = FieldNamesMap::GetChNameByEnName(data);
-		m_GridCtrl.SetItemText(0, colIdx, strOutName.c_str());
-
-		/**
-		 *	Set gird's column's width according strOutName's width.
-		 *  Maybe have no effect because setting of data's font format.
-		 */
-		CSize sz;
-		CClientDC dc(this);
-		sz = dc.GetTextExtent(strOutName.c_str(), strOutName.length());
-		if (sz.cx > 0)
-			// TODO: Checkout is OK.
-			m_GridCtrl.SetColumnWidth(colIdx, (int)sz.cx );
-	}
-
-	/**
-	 *	3. Show data, data is starting from 'nCol' of 'result'.
-	 *  Data in column 0 is the ids, which are no need to display.
-	 *  Display 'seqNo' in grid view instead of 'id' from database.
-	 */
-	int seqNo = 1;					// sqe_no is started from 1.
-	for (int rowIdx = 1; rowIdx < nRow + 1; ++rowIdx) {
-		for (int colIdx = 0; colIdx < nCol; ++colIdx) {
-
-			if (colIdx == 0) {		// Display 'seqNo' in col 0, instead of 'id'
-				char strSeqNo[8] = "";
-				_itoa_s(seqNo++, strSeqNo, 10);
-				m_GridCtrl.SetItemText(rowIdx, colIdx, strSeqNo);
-
-				/**
-				 *	Store 'id' value to later operation, like removing record.
-				 *  Make a relation between 'id' and 'seqNo'.
-				 *  Which will cause that the gird can not order by column.
-				 */
-				char* idStr = result[rowIdx * nCol + colIdx];
-				int id = -1;
-				if (idStr)
-					id = atoi(idStr);
-				if (id >= 0)
-					StoreRecordId(id);
-				continue;
-			}
-
-			/* Display date, Convert UTF8 word to GB2312 format. */
-			string strOut;			
-			char* data = result[rowIdx * nCol + colIdx];
-			string strData = CChineseCodeLib::UTF8ToGB2312(data);
-			m_GridCtrl.SetItemText(rowIdx, colIdx, strData.c_str());
-		}
-	}
+	/** Set grid data */
+	SetGirdData(nRow, nCol, result);
 
 	sqlite3_free_table(result);		// Never forget to free result table.
 	result = NULL;
@@ -329,7 +360,7 @@ int CStockRecordDlg::OpenDatabase(void)
 
 	int ret = 0;
 	CString msg("");
-	ret = sqlite3_open_v2(m_strDBName.c_str(), &m_pDatabase, SQLITE_OPEN_READONLY, NULL);
+	ret = sqlite3_open_v2(m_strDBName.c_str(), &m_pDatabase, SQLITE_OPEN_READWRITE, NULL);
 	if (ret == SQLITE_OK) {
 		m_nDBStatus = DB_STATUS_OPENED;
 		return ret;
@@ -415,7 +446,13 @@ int CStockRecordDlg::InitDatabaseTables( void )
 		+ ")";
 	ret = sqlite3_exec(m_pDatabase, sql.c_str(), NULL, NULL, &errmsg);
 	if (ret != SQLITE_OK) {
-		MessageBox("Cannot create table into database.");
+		if (errmsg) {
+			CString str;
+			str.Format("%s", str);
+			MessageBox(str, "ERROR!");
+			sqlite3_free(errmsg);
+			errmsg = NULL;
+		}
 		return ret;
 	}
 
@@ -436,7 +473,13 @@ int CStockRecordDlg::InitDatabaseTables( void )
 		+ ")";
 	ret = sqlite3_exec(m_pDatabase, sql.c_str(), NULL, NULL, &errmsg);
 	if (ret != SQLITE_OK) {
-		MessageBox("Cannot create table into database.");
+		if (errmsg) {
+			CString str;
+			str.Format("%s", str);
+			MessageBox(str, "ERROR!");
+			sqlite3_free(errmsg);
+			errmsg = NULL;
+		}
 		return ret;
 	}
 
@@ -460,7 +503,13 @@ int CStockRecordDlg::InitDatabaseTables( void )
 		+ ")";
 	ret = sqlite3_exec(m_pDatabase, sql.c_str(), NULL, NULL, &errmsg);
 	if (ret != SQLITE_OK) {
-		MessageBox("Cannot create table into database.");
+		if (errmsg) {
+			CString str;
+			str.Format("%s", str);
+			MessageBox(str, "ERROR!");
+			sqlite3_free(errmsg);
+			errmsg = NULL;
+		}
 		return ret;
 	}
 
@@ -479,7 +528,13 @@ int CStockRecordDlg::InitDatabaseTables( void )
 		+ ")";
 	ret = sqlite3_exec(m_pDatabase, sql.c_str(), NULL, NULL, &errmsg);
 	if (ret != SQLITE_OK) {
-		MessageBox("Cannot create table into database.");
+		if (errmsg) {
+			CString str;
+			str.Format("%s", str);
+			MessageBox(str, "ERROR!");
+			sqlite3_free(errmsg);
+			errmsg = NULL;
+		}
 		return ret;
 	}
 
@@ -552,11 +607,10 @@ void CStockRecordDlg::SetLeftTopItemData( void )
 	m_GridCtrl.SetItemText(0, 0, str.c_str());
 
 	// Set column width.
-	CSize sz;
-	CClientDC dc(this);
-	sz = dc.GetTextExtent(str.c_str(), str.length());
-	if (sz.cx > 0)
-		m_GridCtrl.SetColumnWidth(0, (int)sz.cx);
+	CSize sz = m_GridCtrl.GetTextExtent(0, 0, str.c_str());
+	if (sz.cx > 0) {
+		m_GridCtrl.SetColumnWidth(0, (int)sz.cx + 1);
+	}
 }
 
 void CStockRecordDlg::ClearRecordIds( void )
@@ -601,7 +655,7 @@ void CStockRecordDlg::StoreRecordId( int id )
 
 /**
  *	Handle right click on grid.
- *  Popup a menu and show the operations.
+ *  Popup a menu and show the operations as the menu items.
  */
 void CStockRecordDlg::OnGridRClick( NMHDR *pNotifyStruct, LRESULT* pResult )
 {
@@ -614,6 +668,10 @@ void CStockRecordDlg::OnGridRClick( NMHDR *pNotifyStruct, LRESULT* pResult )
 		*pResult = 1;
 		return;
 	}
+
+// 	/* Make the cell (where right click occurs) selected */
+// 	CCellID cellID(pItem->iRow, pItem->iColumn);
+// 	m_GridCtrl.
 
 	/* Get position where right click occurs. */
 	DWORD dwPos = GetMessagePos();	
@@ -647,5 +705,178 @@ void CStockRecordDlg::OnGridRClick( NMHDR *pNotifyStruct, LRESULT* pResult )
 	}
 
 	menu.DestroyMenu();
-	*pResult = 1;
+	*pResult = 0;
 }
+
+std::string CStockRecordDlg::GetActiveTableName( void )
+{
+	std::string strTableName("");
+
+	switch (m_enumRecordTable) {
+	case T_STOCKBUY:
+		strTableName = m_strBuyTableName;
+		break;
+	case T_STOCKHOLD:
+		strTableName = m_StrHoldTableName;
+		break;
+	case T_STOCKSELL:
+		strTableName = m_strSellTableName;
+		break;
+	case T_STOCKMONEY:
+		strTableName = m_strMoneyTableName;
+		break;
+	default:
+		strTableName = "";
+	}
+
+	return strTableName;
+}
+
+/**
+ *	Get record id according to seqNo.
+ *  Record id is stored in the m_vecStock*Ids.
+ *  Also note that the index of vector is started from 0.
+ */
+int CStockRecordDlg::GetActiveRecordIdBySeqNo( int seqNo )
+{
+	if (seqNo < 0)
+		return -1;
+
+	int id = -1;
+
+	switch (m_enumRecordTable) {
+
+	case T_STOCKBUY:
+		if (m_vecStockBuyIds.empty() || seqNo > (int)m_vecStockBuyIds.size())
+			return -1;
+		else
+			id = m_vecStockBuyIds.at(seqNo - 1);
+		break;
+
+	case T_STOCKHOLD:
+		if (m_vecStockHoldIds.empty() || seqNo > (int)m_vecStockHoldIds.size())
+			return -1;
+		else
+			id = m_vecStockHoldIds.at(seqNo - 1);
+		break;
+
+	case T_STOCKSELL:
+		if (m_vecStockSellIds.empty() || seqNo > (int)m_vecStockSellIds.size())
+			return -1;
+		else
+			id = m_vecStockSellIds.at(seqNo - 1);
+		break;
+
+	case T_STOCKMONEY:
+		if (m_vecStockMoneyIds.empty() || seqNo > (int)m_vecStockMoneyIds.size())
+			return -1;
+		else
+			id = m_vecStockMoneyIds.at(seqNo - 1);
+		break;
+
+	default:
+		id = -1;
+	}
+
+	return id;
+}
+
+
+/**
+ *	Handler for menu item - inserting record to all tables.
+ *  uid contains the actual ID of menu item, like IDM_STOCKBUY_REMOVE...
+ *  NOTE: The IDs of four menu items 'remove record' MUST be sequential.
+ */
+void CStockRecordDlg::OnMenuRemoveRecord( UINT uid )
+{
+	// TODO: 
+	/**
+	 *	1. Get the selected cells and focused cell.
+	 *  2. Get the cell's row number.
+	 *  3. Get corresponding record id.
+	 *  4. Delete record by id.
+	 */
+
+	/**
+	 *	1. Get selected cells and focused cell.
+	 *  Note that the selected cells may not be in succession.
+	 *  So you should check every cell to see whether it is selected.
+	 *  When a cell is selected, the record in the row is to be deleted.
+	 */
+	CCellID focusedCell = m_GridCtrl.GetFocusCell();
+	CCellRange cellRange(-1, -1, -1, -1);
+	int selCount = m_GridCtrl.GetSelectedCount();
+	int ret = 0;
+
+	/* No selected cells, just delete record where focused cell is located. */
+	if (selCount <= 0) {	
+		ret = DeleteRecordBySeqNo(focusedCell.row);
+		return ret;
+	}
+
+	/* Check if focused cell in the range of selected cells */
+	cellRange = m_GridCtrl.GetSelectedCellRange();
+
+}
+
+int CStockRecordDlg::DeleteRecordBySeqNo( int seqNo )
+{
+	if (seqNo <= 0 || seqNo > m_GridCtrl.GetRowCount() - 1)
+		return 1;
+
+	/* Get record id according to seqNo */
+	int id = GetActiveRecordIdBySeqNo(seqNo);
+	if (id <= 0)
+		return ERR;
+
+	/* Delete record by id */
+	ret = DeleteRecordById(id);
+
+	return ret;
+}
+
+int CStockRecordDlg::DeleteRecordById( int id )
+{
+	if (id <= 0)
+		return ERR;
+
+	if (!m_pDatabase || m_nDBStatus != DB_STATUS_OPENED)
+		return ERR;
+
+	/* Get active table name. */
+	string strTableName = GetActiveTableName();
+	if (strTableName.empty())
+		return ERR;
+
+	/* Setup sql string */
+	string sql("");
+	char strId[8] = "";
+
+	_itoa_s(id, strId, 10);
+	sql = sql	+ "BEGIN TRANSACTION; " 
+		+ " DELETE FROM " + strTableName
+		+ " WHERE id = " + strId + "; END TRANSACTION;";
+
+	/* Delete record by id */
+	char* errmsg = NULL;
+	int ret = 0;
+	ret = sqlite3_exec(m_pDatabase, sql.c_str(), NULL, NULL, &errmsg);
+
+	/* Handle error message when error occurs. */
+	if (errmsg) {
+		CString str;
+		str.Format("%s", errmsg);
+		MessageBox(str, "ERROR!");
+		sqlite3_free(errmsg);
+		errmsg = NULL;
+		return ret;
+	}
+
+	return ret;
+}
+
+
+
+
+
+

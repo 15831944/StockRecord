@@ -42,15 +42,28 @@ protected:
 	afx_msg void OnMenuMoneyRecord();
 	afx_msg void OnBnClickedExit();
 	afx_msg void OnGridRClick(NMHDR *pNotifyStruct, LRESULT* pResult);
+	afx_msg void OnMenuRemoveRecord(UINT uid);
 	DECLARE_MESSAGE_MAP()
 
 private:
 	BOOL IsTableNamesValid(void);
 
+	/* SeqNo is also known as the row number (starting from 1) */
+	int DeleteRecordBySeqNo(int seqNo);
+
+	/* Delete record by its id, which is prime key. */
+	int DeleteRecordById(int id);
+
 	/** Get the left top item's data to display according opened table now */
 	void SetLeftTopItemData(void);
 
+	std::string GetActiveTableName(void);
+	int GetActiveRecordIdBySeqNo(int seqNo);
+
 public:
+	/** Set gird with data queried from sqlite3_get_table(). */
+	int SetGirdData(int nRow, int nCol, char** result);
+
 	/** Read records from tables. */
 	int QueryRecordsByTableName(const char* tableName);
 
