@@ -40,6 +40,8 @@ protected:
 	afx_msg void OnMenuBuyRecord();
 	afx_msg void OnMenuSellRecord();
 	afx_msg void OnMenuMoneyRecord();
+	afx_msg void OnBnClickedExit();
+	afx_msg void OnGridRClick(NMHDR *pNotifyStruct, LRESULT* pResult);
 	DECLARE_MESSAGE_MAP()
 
 private:
@@ -106,5 +108,5 @@ private:
 public:
 	
 	
-	afx_msg void OnBnClickedExit();
+	
 };

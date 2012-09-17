@@ -76,6 +76,7 @@ BEGIN_MESSAGE_MAP(CStockRecordDlg, CDialogEx)
 	ON_COMMAND(ID_MENU_SELL_RECORD, &CStockRecordDlg::OnMenuSellRecord)
 	ON_COMMAND(ID_MENU_MONEY_RECORD, &CStockRecordDlg::OnMenuMoneyRecord)
 	ON_BN_CLICKED(IDC_BT_EXIT, &CStockRecordDlg::OnBnClickedExit)
+	ON_NOTIFY(NM_RCLICK, IDC_GRID, &CStockRecordDlg::OnGridRClick)
 END_MESSAGE_MAP()
 
 
@@ -259,7 +260,8 @@ int CStockRecordDlg::QueryRecordsByTableName(const char* tableName)
 		CClientDC dc(this);
 		sz = dc.GetTextExtent(strOutName.c_str(), strOutName.length());
 		if (sz.cx > 0)
-			m_GridCtrl.SetColumnWidth(colIdx, (int)sz.cx + 5);
+			// TODO: Checkout is OK.
+			m_GridCtrl.SetColumnWidth(colIdx, (int)sz.cx );
 	}
 
 	/**
@@ -597,4 +599,53 @@ void CStockRecordDlg::StoreRecordId( int id )
 	}
 }
 
-// TODO: Add function to delete selected records.
+/**
+ *	Handle right click on grid.
+ *  Popup a menu and show the operations.
+ */
+void CStockRecordDlg::OnGridRClick( NMHDR *pNotifyStruct, LRESULT* pResult )
+{
+	//char* itemData = NULL;
+	NM_GRIDVIEW* pItem = (NM_GRIDVIEW*) pNotifyStruct;
+	// itemData = m_GridCtrl.GetItemText(pItem->iRow, pItem->iColumn);
+
+	/* DO NOT popup submenu on fixed column or row */
+	if (m_GridCtrl.IsCellFixed(pItem->iRow, pItem->iColumn)) {
+		*pResult = 1;
+		return;
+	}
+
+	/* Get position where right click occurs. */
+	DWORD dwPos = GetMessagePos();	
+	CPoint point (LOWORD(dwPos), HIWORD(dwPos));
+
+	CMenu menu;
+	CMenu* popupMenu(NULL);		// MUST be inited.
+	menu.LoadMenuA(IDR_MENU2);
+
+	/* Get related submenu according to current opened table */
+	switch (m_enumRecordTable) {
+	case T_STOCKBUY:
+		popupMenu = menu.GetSubMenu(0);
+		break;
+	case T_STOCKHOLD:
+		popupMenu = menu.GetSubMenu(1);
+		break;
+	case T_STOCKSELL:
+		popupMenu = menu.GetSubMenu(2);
+		break;
+	case T_STOCKMONEY:
+		popupMenu = menu.GetSubMenu(3);
+		break;
+	default:
+		break;
+	}
+
+	/* Popup the submenu */
+	if (popupMenu) {
+		popupMenu->TrackPopupMenu(TPM_LEFTALIGN | TPM_LEFTBUTTON, point.x, point.y, this);
+	}
+
+	menu.DestroyMenu();
+	*pResult = 1;
+}
