@@ -360,6 +360,9 @@ std::string CChineseCodeLib::UTF8ToGB2312(const char* str)
 	WCHAR *strSrc = NULL;
 	TCHAR *szRes = NULL;
 
+	if (!str)
+		return "";
+
 	int i = MultiByteToWideChar(CP_UTF8, 0, str, -1, NULL, 0);
 	strSrc = new WCHAR[i+1];
 	MultiByteToWideChar(CP_UTF8, 0, str, -1, strSrc, i);
@@ -380,6 +383,9 @@ std::string CChineseCodeLib::GB2312ToUTF8( const char* str )
 	std::string result;
 	WCHAR *strSrc = NULL;
 	TCHAR *szRes = NULL;
+
+	if (!str)
+		return "";
 
 	// TODO: Look details of these functions. The args.
 	int i = MultiByteToWideChar(CP_ACP, 0, str, -1, NULL, 0);

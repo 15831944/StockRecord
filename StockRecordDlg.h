@@ -8,6 +8,10 @@
 extern "C" {
 	#include <sqlite3.h>	// SQLite support.
 };
+
+#include "StockModel.h"
+#include "StockBuyDlg.h"
+
 #include <vector>
 using namespace std;
 
@@ -43,13 +47,14 @@ protected:
 	afx_msg void OnBnClickedExit();
 	afx_msg void OnGridRClick(NMHDR *pNotifyStruct, LRESULT* pResult);
 	afx_msg void OnMenuRemoveRecord(UINT uid);
+	afx_msg void OnStockbuyAdd();
+	afx_msg void OnStockholdPlanSell();
+	afx_msg void OnStockholdSell();
+	afx_msg void OnStockmoneyInout();
 	DECLARE_MESSAGE_MAP()
 
 private:
 	BOOL IsTableNamesValid(void);
-
-	/* Delete record by its id, which is prime key. */
-	int DeleteRecordById(int id);
 
 	/** Get the left top item's data to display according opened table now */
 	void SetLeftTopItemData(void);
@@ -59,8 +64,14 @@ private:
 
 	/** Check out if @cellRanged is valid */
 	BOOL IsCellRangeValid(const CCellRange& cellRange);
-	BOOL IsFocusedCellInSelectedRange(
+	BOOL IsFocusedCellInSelectedRows(
 		const CCellID& focusedCell, const CCellRange& cellRange);
+
+	/* Return a real model, not model's reference. */
+	CStockBuyModel	 ConvertDlgDataToBuyModel(const CStockBuyDlg& buyDlg);
+	CStockHoldModel  ConvertBuyDataToHoldModel();
+	CStockSellModel  ConvertHoldDataToSellModel();
+	CStockMoneyModel ConvertDlgDataToMoneyModel(const CDialogEx& moneyDlg);
 
 public:
 	/** Set gird with data queried from sqlite3_get_table(). */
@@ -68,6 +79,9 @@ public:
 
 	/** Read records from tables. */
 	int QueryRecordsByTableName(const char* tableName);
+
+	/** Reload table records according to m_enumRecordTable */
+	int ReloadRecords(void);
 
 	/** Set up database and tables' names, must be called at startup. */
 	int SetupDBTableNames(void);
@@ -80,8 +94,6 @@ public:
 
 	/** Initiate database's tables, should be called only once. */
 	int InitDatabaseTables(void);
-
-	
 
 private:
 	
@@ -123,7 +135,6 @@ private:
 	void StoreRecordId(int id);
 
 public:
-	
-	
-	
+
+
 };

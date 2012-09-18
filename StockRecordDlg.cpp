@@ -9,6 +9,8 @@
 
 #include "FieldNamesMap.h"
 
+// #include "StockBuyDlg.h"
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif
@@ -78,6 +80,10 @@ BEGIN_MESSAGE_MAP(CStockRecordDlg, CDialogEx)
 	ON_BN_CLICKED(IDC_BT_EXIT, &CStockRecordDlg::OnBnClickedExit)
 	ON_NOTIFY(NM_RCLICK, IDC_GRID, &CStockRecordDlg::OnGridRClick)
 	ON_COMMAND_RANGE(IDM_STOCKBUY_REMOVE, IDM_STOCKMONEY_REMOVE, &CStockRecordDlg::OnMenuRemoveRecord)
+	ON_COMMAND(IDM_STOCKBUY_ADD, &CStockRecordDlg::OnStockbuyAdd)
+	ON_COMMAND(IDM_STOCKHOLD_PLAN_SELL, &CStockRecordDlg::OnStockholdPlanSell)
+	ON_COMMAND(IDM_STOCKHOLD_SELL, &CStockRecordDlg::OnStockholdSell)
+	ON_COMMAND(IDM_STOCKMONEY_INOUT, &CStockRecordDlg::OnStockmoneyInout)
 END_MESSAGE_MAP()
 
 
@@ -178,6 +184,78 @@ HCURSOR CStockRecordDlg::OnQueryDragIcon()
 	return static_cast<HCURSOR>(m_hIcon);
 }
 
+void CStockRecordDlg::SetLeftTopItemData( void )
+{
+	string str("");
+
+	switch (m_enumRecordTable) {
+	case T_STOCKBUY:
+		str.assign("BUY");
+		break;
+	case T_STOCKHOLD:
+		str.assign("HOLD");
+		break;
+	case T_STOCKSELL:
+		str.assign("SELL");
+		break;
+	case T_STOCKMONEY:
+		str.assign("MONEY");
+		break;
+	default:
+		str.assign("ERR");
+		break;
+	}
+
+	// Set data of (0, 0) item.
+	m_GridCtrl.SetItemText(0, 0, str.c_str());
+
+	// Set column width.
+	CSize sz = m_GridCtrl.GetTextExtent(0, 0, str.c_str());
+	if (sz.cx > 0) {
+		m_GridCtrl.SetColumnWidth(0, (int)sz.cx + 1);
+	}
+}
+
+void CStockRecordDlg::ClearRecordIds( void )
+{
+	switch (m_enumRecordTable) {
+	case T_STOCKBUY:
+		m_vecStockBuyIds.clear();
+		break;
+	case T_STOCKHOLD:
+		m_vecStockHoldIds.clear();
+		break;
+	case T_STOCKSELL:
+		m_vecStockSellIds.clear();
+		break;
+	case T_STOCKMONEY:
+		m_vecStockMoneyIds.clear();
+		break;
+	default:
+		break;
+	}
+}
+
+void CStockRecordDlg::StoreRecordId( int id )
+{
+	switch (m_enumRecordTable) {
+	case T_STOCKBUY:
+		m_vecStockBuyIds.push_back(id);
+		break;
+	case T_STOCKHOLD:
+		m_vecStockHoldIds.push_back(id);
+		break;
+	case T_STOCKSELL:
+		m_vecStockSellIds.push_back(id);
+		break;
+	case T_STOCKMONEY:
+		m_vecStockMoneyIds.push_back(id);
+		break;
+	default:
+		break;
+	}
+}
+
 /*
  *	Set gird data queried from sqlite3_get_table.
  *  nRow - How many rows of the data.
@@ -270,8 +348,10 @@ int CStockRecordDlg::SetGirdData( int nRow, int nCol, char** result )
 				int id = -1;
 				if (idStr)
 					id = atoi(idStr);
-				if (id >= 0)
+				if (id > 0)
 					StoreRecordId(id);
+				else
+					MessageBox("Record id is <= 0.", "ERROR!");
 				continue;
 			}
 
@@ -334,6 +414,31 @@ int CStockRecordDlg::QueryRecordsByTableName(const char* tableName)
 	sqlite3_free_table(result);		// Never forget to free result table.
 	result = NULL;
 	return OK;
+}
+
+int CStockRecordDlg::ReloadRecords( void )
+{
+	int ret = 0;
+
+	switch (m_enumRecordTable) {
+
+	case T_STOCKBUY:
+		QueryRecordsByTableName(m_strBuyTableName.c_str());
+		break;
+	case T_STOCKHOLD:
+		QueryRecordsByTableName(m_StrHoldTableName.c_str());
+		break;
+	case T_STOCKSELL:
+		QueryRecordsByTableName(m_strSellTableName.c_str());
+		break;
+	case T_STOCKMONEY:
+		QueryRecordsByTableName(m_strMoneyTableName.c_str());
+		break;
+	default:
+		ret = ERR;
+	}
+
+	return ret;
 }
 
 int CStockRecordDlg::SetupDBTableNames(void)
@@ -581,77 +686,6 @@ void CStockRecordDlg::OnBnClickedExit()
 	CDialogEx::OnCancel();
 }
 
-void CStockRecordDlg::SetLeftTopItemData( void )
-{
-	string str("");
-
-	switch (m_enumRecordTable) {
-	case T_STOCKBUY:
-		str.assign("BUY");
-		break;
-	case T_STOCKHOLD:
-		str.assign("HOLD");
-		break;
-	case T_STOCKSELL:
-		str.assign("SELL");
-		break;
-	case T_STOCKMONEY:
-		str.assign("MONEY");
-		break;
-	default:
-		str.assign("ERR");
-		break;
-	}
-
-	// Set data of (0, 0) item.
-	m_GridCtrl.SetItemText(0, 0, str.c_str());
-
-	// Set column width.
-	CSize sz = m_GridCtrl.GetTextExtent(0, 0, str.c_str());
-	if (sz.cx > 0) {
-		m_GridCtrl.SetColumnWidth(0, (int)sz.cx + 1);
-	}
-}
-
-void CStockRecordDlg::ClearRecordIds( void )
-{
-	switch (m_enumRecordTable) {
-	case T_STOCKBUY:
-		m_vecStockBuyIds.clear();
-		break;
-	case T_STOCKHOLD:
-		m_vecStockHoldIds.clear();
-		break;
-	case T_STOCKSELL:
-		m_vecStockSellIds.clear();
-		break;
-	case T_STOCKMONEY:
-		m_vecStockMoneyIds.clear();
-		break;
-	default:
-		break;
-	}
-}
-
-void CStockRecordDlg::StoreRecordId( int id )
-{
-	switch (m_enumRecordTable) {
-	case T_STOCKBUY:
-		m_vecStockBuyIds.push_back(id);
-		break;
-	case T_STOCKHOLD:
-		m_vecStockHoldIds.push_back(id);
-		break;
-	case T_STOCKSELL:
-		m_vecStockSellIds.push_back(id);
-		break;
-	case T_STOCKMONEY:
-		m_vecStockMoneyIds.push_back(id);
-		break;
-	default:
-		break;
-	}
-}
 
 /**
  *	Handle right click on grid.
@@ -659,19 +693,13 @@ void CStockRecordDlg::StoreRecordId( int id )
  */
 void CStockRecordDlg::OnGridRClick( NMHDR *pNotifyStruct, LRESULT* pResult )
 {
-	//char* itemData = NULL;
 	NM_GRIDVIEW* pItem = (NM_GRIDVIEW*) pNotifyStruct;
-	// itemData = m_GridCtrl.GetItemText(pItem->iRow, pItem->iColumn);
 
 	/* DO NOT popup submenu on fixed column or row */
 	if (m_GridCtrl.IsCellFixed(pItem->iRow, pItem->iColumn)) {
 		*pResult = 1;
 		return;
 	}
-
-// 	/* Make the cell (where right click occurs) selected */
-// 	CCellID cellID(pItem->iRow, pItem->iColumn);
-// 	m_GridCtrl.
 
 	/* Get position where right click occurs. */
 	DWORD dwPos = GetMessagePos();	
@@ -706,30 +734,6 @@ void CStockRecordDlg::OnGridRClick( NMHDR *pNotifyStruct, LRESULT* pResult )
 
 	menu.DestroyMenu();
 	*pResult = 0;
-}
-
-std::string CStockRecordDlg::GetActiveTableName( void )
-{
-	std::string strTableName("");
-
-	switch (m_enumRecordTable) {
-	case T_STOCKBUY:
-		strTableName = m_strBuyTableName;
-		break;
-	case T_STOCKHOLD:
-		strTableName = m_StrHoldTableName;
-		break;
-	case T_STOCKSELL:
-		strTableName = m_strSellTableName;
-		break;
-	case T_STOCKMONEY:
-		strTableName = m_strMoneyTableName;
-		break;
-	default:
-		strTableName = "";
-	}
-
-	return strTableName;
 }
 
 /**
@@ -781,105 +785,6 @@ int CStockRecordDlg::GetActiveRecordIdBySeqNo( int seqNo )
 	return id;
 }
 
-
-/**
- *	Handler for menu item - inserting record to all tables.
- *  uid contains the actual ID of menu item, like IDM_STOCKBUY_REMOVE... (no use)
- *  NOTE: The IDs of four menu items 'remove record' MUST be sequential.
- *  When the deleting action is going on, DONOT reload the data from database.
- */
-void CStockRecordDlg::OnMenuRemoveRecord( UINT uid )
-{
-	/**
-	 *	1. Get selected cells and focused cell.
-	 *  Note that the selected cells may not be in succession.
-	 *  So you should check every cell to see whether it is really selected.
-	 *  When a cell is selected, the record in the row is to be deleted.
-	 */
-	CCellID focusedCell = m_GridCtrl.GetFocusCell();
-	CCellRange cellRange(-1, -1, -1, -1);
-	int selCount = m_GridCtrl.GetSelectedCount();
-	cellRange = m_GridCtrl.GetSelectedCellRange();
-	int ret = 0;
-
-	/**
-	 * 1.1 No selected cells, or the selected cell range is not valid,
-	 * just delete record where focused cell is located. 
-	 */
-	if (selCount <= 0 || !IsCellRangeValid(cellRange)) {
-		int id = GetActiveRecordIdBySeqNo(focusedCell.row);
-		if (id > 0)
-			ret = DeleteRecordById(id);
-		return;
-	}
-
-	/**
-	 * 1.2 Focused cell is not in the range of selected cell range.
-	 * Firstly, delete focused record, 
-	 * then, the selected records.
-	 */
-	int id = 0;
-	if (!IsFocusedCellInSelectedRange(focusedCell, cellRange)) {
-
-		/* 1.2.1 Firstly, delete the record where focused cell is located. */
-		id = GetActiveRecordIdBySeqNo(focusedCell.row);
-		if (id > 0)
-			ret = DeleteRecordById(id);
-	}
-
-	/**
-	 *	1.2.2 Secondly, delete selected records by traversing every cell
-	 *  in the range to see whether it is really selected.
-	 */
-	for (int rowIdx = cellRange.GetMinRow(); 
-		 rowIdx < cellRange.GetMaxRow(); 
-		 ++rowIdx) {
-		// TODO: DELETE selected records in the cell range.
-	}
-
-
-}
-
-int CStockRecordDlg::DeleteRecordById( int id )
-{
-	if (id <= 0)
-		return ERR;
-
-	if (!m_pDatabase || m_nDBStatus != DB_STATUS_OPENED)
-		return ERR;
-
-	/* Get active table name. */
-	string strTableName = GetActiveTableName();
-	if (strTableName.empty())
-		return ERR;
-
-	/* Setup sql string */
-	string sql("");
-	char strId[8] = "";
-
-	_itoa_s(id, strId, 10);
-	sql = sql	+ "BEGIN TRANSACTION; " 
-		+ " DELETE FROM " + strTableName
-		+ " WHERE id = " + strId + "; END TRANSACTION;";
-
-	/* Delete record by id */
-	char* errmsg = NULL;
-	int ret = 0;
-	ret = sqlite3_exec(m_pDatabase, sql.c_str(), NULL, NULL, &errmsg);
-
-	/* Handle error message when error occurs. */
-	if (errmsg) {
-		CString str;
-		str.Format("%s", errmsg);
-		MessageBox(str, "ERROR!");
-		sqlite3_free(errmsg);
-		errmsg = NULL;
-		return ret;
-	}
-
-	return ret;
-}
-
 BOOL CStockRecordDlg::IsCellRangeValid( const CCellRange& cellRange )
 {
 	if (cellRange.GetMinRow() < 0 || cellRange.GetMinCol() < 0 ||
@@ -894,24 +799,166 @@ BOOL CStockRecordDlg::IsCellRangeValid( const CCellRange& cellRange )
 	return FALSE;
 }
 
-/** Whether is cell in the range of cellRange. */
-BOOL CStockRecordDlg::IsFocusedCellInSelectedRange( 
+/** Whether is cell in the range of cellRange (rows range). */
+BOOL CStockRecordDlg::IsFocusedCellInSelectedRows( 
 	const CCellID& cell, const CCellRange& cellRange )
 {
 	if (cell.row < 0 || cell.col < 0 || !IsCellRangeValid(cellRange))
 		return FALSE;
 
-	if (cellRange.GetMinRow() <= cell.row && cell.row <= cellRange.GetMaxRow() &&
-		cellRange.GetMinCol() <= cell.col && cell.col <= cellRange.GetMaxCol()) {
-			return TRUE;
-	}
+	/* Compare row numbers */
+	if (cellRange.GetMinRow() <= cell.row && cell.row <= cellRange.GetMaxRow()) 
+		return TRUE;
 
 	return FALSE;
 }
 
+std::string CStockRecordDlg::GetActiveTableName( void )
+{
+	std::string strTableName("");
+
+	switch (m_enumRecordTable) {
+	case T_STOCKBUY:
+		strTableName = m_strBuyTableName;
+		break;
+	case T_STOCKHOLD:
+		strTableName = m_StrHoldTableName;
+		break;
+	case T_STOCKSELL:
+		strTableName = m_strSellTableName;
+		break;
+	case T_STOCKMONEY:
+		strTableName = m_strMoneyTableName;
+		break;
+	default:
+		strTableName = "";
+	}
+
+	return strTableName;
+}
 
 
+/**
+ *	Handler for menu item - deleting record for all tables.
+ *  uid contains the actual ID of menu item, like IDM_STOCKBUY_REMOVE... (no use)
+ *  NOTE: The IDs of four menu items 'remove record' MUST be sequential.
+ *  When the deleting action is going on, DONOT reload the data from database.
+ */
+void CStockRecordDlg::OnMenuRemoveRecord( UINT uid )
+{
+	if (MessageBox("确定要删除记录？", "Confirm", MB_YESNO) != IDYES) {
+		return;
+	}
 
+	ASSERT(m_pDatabase && m_nDBStatus == DB_STATUS_OPENED);
 
+	/**
+	 *	1. Get selected cells and focused cell.
+	 *  Note that the selected cells may not be in succession.
+	 *  So you should check every cell to see whether it is really selected.
+	 *  When a cell is selected, the record in the row is to be deleted.
+	 */
+	string strTableName = GetActiveTableName();
+	CCellID focusedCell = m_GridCtrl.GetFocusCell();
+	CCellRange cellRange(-1, -1, -1, -1);
+	int selCount = m_GridCtrl.GetSelectedCount();
+	cellRange = m_GridCtrl.GetSelectedCellRange();
+	int ret = 0;
 
+	/**
+	 * 1.1 No selected cells, or the selected cell range is not valid,
+	 * just delete record where focused cell is located. 
+	 */
+	if (selCount <= 0 || !IsCellRangeValid(cellRange)) {
+		int id = GetActiveRecordIdBySeqNo(focusedCell.row);
+		ret = DeleteRecordById(m_pDatabase, strTableName.c_str(), id);
+		ReloadRecords();
+		return ;
+	}
 
+	/**
+	 * 1.2 Focused cell is not in the range of selected rows range.
+	 * Firstly, delete focused record, 
+	 * then, the selected records.
+	 */
+	if (!IsFocusedCellInSelectedRows(focusedCell, cellRange)) {
+
+		/* 1.2.1 Firstly, delete the record where focused cell is located. */
+		int id = GetActiveRecordIdBySeqNo(focusedCell.row);
+		ret = DeleteRecordById(m_pDatabase, strTableName.c_str(), id);
+	}
+
+	/**
+	 *	1.2.2 Secondly, delete selected records by traversing every cell
+	 *  in the range to see whether it is really selected.
+	 */
+	for (int rowIdx = cellRange.GetMinRow(); 
+		 rowIdx <= cellRange.GetMaxRow(); 
+		 ++rowIdx) {
+
+		for (int colIdx = cellRange.GetMinCol();
+			colIdx <= cellRange.GetMaxCol();
+			++colIdx) {
+
+			/* Cell (rowIdx, colIdx) is selected, delete related record,
+			 * and restart traversing cells in the next row. 
+			 */
+			if (m_GridCtrl.IsCellSelected(rowIdx, colIdx)) {
+				int id = GetActiveRecordIdBySeqNo(rowIdx);
+				ret = DeleteRecordById(m_pDatabase, strTableName.c_str(), id);
+				break;	/* check next row */
+			}
+		} // inner for
+	} // outer for
+
+	/** After the deletion is done, reload data from database. */
+	ReloadRecords();
+}
+
+void CStockRecordDlg::OnStockbuyAdd()
+{
+	CStockBuyDlg buyDlg;
+	if (buyDlg.DoModal() != IDOK) {
+		return ;
+	}
+
+	/* 1. Get the data from dialog, and convert the data to model data. 
+	 * The window class is valid, but the window does not exist (hwnd is 0). 
+	 */
+	CStockBuyModel buyModel = ConvertDlgDataToBuyModel(buyDlg);
+
+	/* 2. Insert record into stock_buy table */
+
+	/* 3. Reload records. */
+}
+
+void CStockRecordDlg::OnStockholdPlanSell()
+{
+}
+
+void CStockRecordDlg::OnStockholdSell()
+{
+}
+
+void CStockRecordDlg::OnStockmoneyInout()
+{
+}
+
+CStockBuyModel 
+CStockRecordDlg::ConvertDlgDataToBuyModel( const CStockBuyDlg& buyDlg )
+{
+	CStockBuyModel buyModel;
+
+	buyModel.code = buyDlg.m_strCode;
+	buyModel.name = buyDlg.m_strName;
+	buyModel.buy_price.Format("%.2f", buyDlg.m_fBuyPrice);
+	buyModel.buy_amount.Format("%d", buyDlg.m_nBuyAmount);
+
+	/* Make sure the date format is: YYYY-MM-DD. */
+	int year	= buyDlg.m_oleDataTime.GetYear();
+	int month	= buyDlg.m_oleDataTime.GetMonth();
+	int day		= buyDlg.m_oleDataTime.GetDay();
+	buyModel.buy_date.Format("%04d-%02d-%02d", year, month, day);
+
+	return buyModel;
+}

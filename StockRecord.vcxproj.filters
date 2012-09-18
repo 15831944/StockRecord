@@ -99,6 +99,12 @@
     <ClInclude Include="FieldNamesMap.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="StockModel.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="StockBuyDlg.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="StockRecord.cpp">
@@ -147,6 +153,12 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="FieldNamesMap.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="StockModel.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="StockBuyDlg.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

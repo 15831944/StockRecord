@@ -118,6 +118,8 @@
     <ClInclude Include="NewCellTypes\GridURLCell.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="stdafx.h" />
+    <ClInclude Include="StockBuyDlg.h" />
+    <ClInclude Include="StockModel.h" />
     <ClInclude Include="StockRecord.h" />
     <ClInclude Include="StockRecordDlg.h" />
     <ClInclude Include="targetver.h" />
@@ -140,6 +142,8 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="StockBuyDlg.cpp" />
+    <ClCompile Include="StockModel.cpp" />
     <ClCompile Include="StockRecord.cpp" />
     <ClCompile Include="StockRecordDlg.cpp" />
   </ItemGroup>
