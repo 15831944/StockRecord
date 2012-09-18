@@ -48,9 +48,6 @@ protected:
 private:
 	BOOL IsTableNamesValid(void);
 
-	/* SeqNo is also known as the row number (starting from 1) */
-	int DeleteRecordBySeqNo(int seqNo);
-
 	/* Delete record by its id, which is prime key. */
 	int DeleteRecordById(int id);
 
@@ -59,6 +56,11 @@ private:
 
 	std::string GetActiveTableName(void);
 	int GetActiveRecordIdBySeqNo(int seqNo);
+
+	/** Check out if @cellRanged is valid */
+	BOOL IsCellRangeValid(const CCellRange& cellRange);
+	BOOL IsFocusedCellInSelectedRange(
+		const CCellID& focusedCell, const CCellRange& cellRange);
 
 public:
 	/** Set gird with data queried from sqlite3_get_table(). */
@@ -78,6 +80,8 @@ public:
 
 	/** Initiate database's tables, should be called only once. */
 	int InitDatabaseTables(void);
+
+	
 
 private:
 	

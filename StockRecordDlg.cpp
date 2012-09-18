@@ -784,55 +784,60 @@ int CStockRecordDlg::GetActiveRecordIdBySeqNo( int seqNo )
 
 /**
  *	Handler for menu item - inserting record to all tables.
- *  uid contains the actual ID of menu item, like IDM_STOCKBUY_REMOVE...
+ *  uid contains the actual ID of menu item, like IDM_STOCKBUY_REMOVE... (no use)
  *  NOTE: The IDs of four menu items 'remove record' MUST be sequential.
+ *  When the deleting action is going on, DONOT reload the data from database.
  */
 void CStockRecordDlg::OnMenuRemoveRecord( UINT uid )
 {
-	// TODO: 
-	/**
-	 *	1. Get the selected cells and focused cell.
-	 *  2. Get the cell's row number.
-	 *  3. Get corresponding record id.
-	 *  4. Delete record by id.
-	 */
-
 	/**
 	 *	1. Get selected cells and focused cell.
 	 *  Note that the selected cells may not be in succession.
-	 *  So you should check every cell to see whether it is selected.
+	 *  So you should check every cell to see whether it is really selected.
 	 *  When a cell is selected, the record in the row is to be deleted.
 	 */
 	CCellID focusedCell = m_GridCtrl.GetFocusCell();
 	CCellRange cellRange(-1, -1, -1, -1);
 	int selCount = m_GridCtrl.GetSelectedCount();
+	cellRange = m_GridCtrl.GetSelectedCellRange();
 	int ret = 0;
 
-	/* No selected cells, just delete record where focused cell is located. */
-	if (selCount <= 0) {	
-		ret = DeleteRecordBySeqNo(focusedCell.row);
-		return ret;
+	/**
+	 * 1.1 No selected cells, or the selected cell range is not valid,
+	 * just delete record where focused cell is located. 
+	 */
+	if (selCount <= 0 || !IsCellRangeValid(cellRange)) {
+		int id = GetActiveRecordIdBySeqNo(focusedCell.row);
+		if (id > 0)
+			ret = DeleteRecordById(id);
+		return;
 	}
 
-	/* Check if focused cell in the range of selected cells */
-	cellRange = m_GridCtrl.GetSelectedCellRange();
+	/**
+	 * 1.2 Focused cell is not in the range of selected cell range.
+	 * Firstly, delete focused record, 
+	 * then, the selected records.
+	 */
+	int id = 0;
+	if (!IsFocusedCellInSelectedRange(focusedCell, cellRange)) {
 
-}
+		/* 1.2.1 Firstly, delete the record where focused cell is located. */
+		id = GetActiveRecordIdBySeqNo(focusedCell.row);
+		if (id > 0)
+			ret = DeleteRecordById(id);
+	}
 
-int CStockRecordDlg::DeleteRecordBySeqNo( int seqNo )
-{
-	if (seqNo <= 0 || seqNo > m_GridCtrl.GetRowCount() - 1)
-		return 1;
+	/**
+	 *	1.2.2 Secondly, delete selected records by traversing every cell
+	 *  in the range to see whether it is really selected.
+	 */
+	for (int rowIdx = cellRange.GetMinRow(); 
+		 rowIdx < cellRange.GetMaxRow(); 
+		 ++rowIdx) {
+		// TODO: DELETE selected records in the cell range.
+	}
 
-	/* Get record id according to seqNo */
-	int id = GetActiveRecordIdBySeqNo(seqNo);
-	if (id <= 0)
-		return ERR;
 
-	/* Delete record by id */
-	ret = DeleteRecordById(id);
-
-	return ret;
 }
 
 int CStockRecordDlg::DeleteRecordById( int id )
@@ -874,6 +879,36 @@ int CStockRecordDlg::DeleteRecordById( int id )
 
 	return ret;
 }
+
+BOOL CStockRecordDlg::IsCellRangeValid( const CCellRange& cellRange )
+{
+	if (cellRange.GetMinRow() < 0 || cellRange.GetMinCol() < 0 ||
+		cellRange.GetMaxRow() < 0 || cellRange.GetMaxCol() < 0) {
+			return FALSE;
+	}
+
+	if (cellRange.GetMinRow() <= cellRange.GetMaxRow() &&
+		cellRange.GetMinCol() <= cellRange.GetMaxCol()) {
+			return TRUE;
+	}
+	return FALSE;
+}
+
+/** Whether is cell in the range of cellRange. */
+BOOL CStockRecordDlg::IsFocusedCellInSelectedRange( 
+	const CCellID& cell, const CCellRange& cellRange )
+{
+	if (cell.row < 0 || cell.col < 0 || !IsCellRangeValid(cellRange))
+		return FALSE;
+
+	if (cellRange.GetMinRow() <= cell.row && cell.row <= cellRange.GetMaxRow() &&
+		cellRange.GetMinCol() <= cell.col && cell.col <= cellRange.GetMaxCol()) {
+			return TRUE;
+	}
+
+	return FALSE;
+}
+
 
 
 
