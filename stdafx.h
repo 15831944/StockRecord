@@ -43,22 +43,8 @@
 #include <string>
 using namespace std;
 
-// Specifies that the minimum required platform is Windows XP.
-// #ifdef WINVER	
-// #undef WINVER
-// #define WINVER 0x0500          // Win2k
-// #else
-// #define WINVER 0x0500          // Win2k
-// #endif
-
-
-// #ifdef _WIN32_WINNT            // 指定要求的最低平台是 Windows Vista。
-// #undef _WIN32_WINNT
-// #define _WIN32_WINNT 0x0500     // 将此值更改为相应的值，以适用于 Windows 的其他版本。
-// #else
-// #define _WIN32_WINNT 0x0500     // 将此值更改为相应的值，以适用于 Windows 的其他版本。
-// #endif
- 
+#define STOCK_TYPE_SHANG_HAI	0
+#define STOCK_TYPE_SHEN_ZHEN	1
 
 
 #ifdef _UNICODE

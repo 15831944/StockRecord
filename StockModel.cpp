@@ -57,7 +57,8 @@ InsertBuyRecord( sqlite3* db, const char* strTable, const CStockBuyModel& model 
 		+ " (code, name, buy_price, buy_amount, buy_date) "
 		+ " VALUES( "
 		+ " \"" + (LPCTSTR)model.code + "\", "
-		+ " \"" + (LPCTSTR)model.name + "\", "
+		/* TOBE optimized, only convert name to UTF8 from GB2312 when inserting */
+		+ " \"" + CChineseCodeLib::GB2312ToUTF8((LPCTSTR)model.name) + "\", "
 		+  (LPCTSTR)model.buy_price + ", "
 		+  (LPCTSTR)model.buy_amount + ", "
 		+ "date(\"" + (LPCTSTR)model.buy_date + "\")"
@@ -99,6 +100,67 @@ InsertHoldRecord(sqlite3* db, const char* strTable, const CStockHoldModel& model
 
 	return ret;
 }
+
+/**
+ *	para is OUT parameter, which will hold the record queried from database.
+ *  para's actual type is CStockHoldModel;
+ */
+int StockHoldCallback( void* para, int nCol, char** colValue, char** colName )
+{
+	if (!para || !colName || !colName)
+		return ERR;
+
+	/* assign value according to its column name */
+	CStockHoldModel* pModel = (CStockHoldModel*) para;
+	pModel->code.Format("%s", (!colValue[1] ? "" : colValue[1]));
+	/* To be opted, convert format for all members if they are Chinese words. */
+	pModel->name.Format("%s", (!colValue[2] ? "" :	\
+		CChineseCodeLib::UTF8ToGB2312(colValue[2]).c_str()));
+	pModel->buy_price.Format("%s", (!colValue[3] ? "" : colValue[3]));
+	pModel->hold_cost.Format("%s", (!colValue[4] ? "" : colValue[4]));
+	pModel->hold_amount.Format("%s", (!colValue[5] ? "" : colValue[5]));
+	pModel->even_price.Format("%s", (!colValue[6] ? "" : colValue[6]));
+
+	return OK;
+}
+
+/**
+ *	Note that the records in table stock_hold are unique by code.
+ *  So this function will always query one record if there is.
+ *  If no record, return an emply object.
+ */
+CStockHoldModel 
+SelectHoldRecordByCode( sqlite3*db, const char* strTable, const char* code)
+{
+	if (!db || !strTable || strlen(strTable) == 0
+		|| !code || strlen(code) == 0)
+		return CStockHoldModel();
+
+	CStockHoldModel holdModel;
+	string sql("");
+	sql = sql 
+		+ "SELECT * FROM "
+		+ strTable
+		+ " WHERE code = "
+		+ "\"" + code + "\" LIMIT 1;";
+
+	char* errmsg = NULL;
+	int ret = 0;
+	ret = sqlite3_exec(db, sql.c_str(), StockHoldCallback, &holdModel, &errmsg);
+
+	/* Handle error message when error occurs. */
+	if (errmsg) {
+		CString str;
+		str.Format("%s", errmsg);
+		AfxMessageBox(str);
+		sqlite3_free(errmsg);
+		errmsg = NULL;
+		return CStockHoldModel();
+	}
+
+	return holdModel;
+}
+
 /**
  *	Stock buy model
  */ 
@@ -108,6 +170,7 @@ CStockBuyModel::CStockBuyModel( void )
 	, buy_price(_T(""))
 	, buy_amount(_T(""))
 	, buy_date(_T(""))
+	, stock_type()
 {
 }
 

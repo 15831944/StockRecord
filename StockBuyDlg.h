@@ -29,9 +29,6 @@ public:
 	int m_nBuyAmount;
 	COleDateTime m_oleDataTime;
 
-	enum STOCK_TYPE {
-		STOCK_TYPE_SHANG_HAI = 0,
-		STOCK_TYPE_SHEN_ZHEN
-	} m_eStockType;
+	bool m_bStockType;
 
 };

@@ -119,6 +119,7 @@
     <ClInclude Include="Resource.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="StockBuyDlg.h" />
+    <ClInclude Include="StockCalculate.h" />
     <ClInclude Include="StockModel.h" />
     <ClInclude Include="StockRecord.h" />
     <ClInclude Include="StockRecordDlg.h" />
@@ -143,6 +144,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="StockBuyDlg.cpp" />
+    <ClCompile Include="StockCalculate.cpp" />
     <ClCompile Include="StockModel.cpp" />
     <ClCompile Include="StockRecord.cpp" />
     <ClCompile Include="StockRecordDlg.cpp" />

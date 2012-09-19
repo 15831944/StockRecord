@@ -18,7 +18,7 @@ CStockBuyDlg::CStockBuyDlg(CWnd* pParent /*=NULL*/)
 	, m_fBuyPrice(0)
 	, m_nBuyAmount(0)
 	, m_oleDataTime(COleDateTime::GetCurrentTime())
-	, m_eStockType(STOCK_TYPE_SHANG_HAI)
+	, m_bStockType(STOCK_TYPE_SHANG_HAI)
 {
 
 }
@@ -69,10 +69,10 @@ void CStockBuyDlg::OnBnClickedOk()
 	}
 
 	/* Check whether stock is ShangHai or ShenZhen */
-	if (m_strCode.GetAt(0) == '0')
-		m_eStockType = STOCK_TYPE_SHANG_HAI;
+	if (m_strCode.GetAt(0) == '6')
+		m_bStockType = STOCK_TYPE_SHANG_HAI;
 	else
-		m_eStockType = STOCK_TYPE_SHEN_ZHEN;
+		m_bStockType = STOCK_TYPE_SHEN_ZHEN;
 	
 	/* Check name */
 	if (m_strName.IsEmpty()) {

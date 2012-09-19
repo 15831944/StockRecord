@@ -2,6 +2,8 @@
  *	Define model class to hold values queried from or written to database.
  *  The model can be defined as class or struct.
  *  Also, provide some functions to manipulate the database.
+ *
+ *  NOTE: The model's members should store values converted into GB2312 from UTF8.
  */
 
 #ifndef STOCK_RECORD_MODEL_H
@@ -36,6 +38,7 @@ public:
 	CString buy_price;
 	CString buy_amount;
 	CString buy_date;
+	bool stock_type;
 };
 
 /**
@@ -82,5 +85,9 @@ int DeleteRecordById(sqlite3* db, const char* tableName, int id);
 
 int InsertBuyRecord(sqlite3* db, const char* buyTable, const CStockBuyModel&);
 int InsertHoldRecord(sqlite3* db, const char* strTable, const CStockHoldModel&);
+
+int StockHoldCallback(void* para, int nCol, char** colValue, char** colName);
+CStockHoldModel 
+SelectHoldRecordByCode(sqlite3*db, const char* strTable, const char* code);
 
 #endif
