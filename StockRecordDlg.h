@@ -69,9 +69,9 @@ private:
 
 	/* Return a real model, not model's reference. */
 	CStockBuyModel	 ConvertDlgDataToBuyModel(const CStockBuyDlg& buyDlg);
-	CStockHoldModel  ConvertBuyDataToHoldModel();
-	CStockSellModel  ConvertHoldDataToSellModel();
-	CStockMoneyModel ConvertDlgDataToMoneyModel(const CDialogEx& moneyDlg);
+	CStockHoldModel  ConvertBuyModelToHoldModel(const CStockBuyModel&);
+//	CStockSellModel  ConvertHoldModelToSellModel(const CStockHoldModel&);
+	CStockMoneyModel ConvertDlgDataToMoneyModel();
 
 public:
 	/** Set gird with data queried from sqlite3_get_table(). */

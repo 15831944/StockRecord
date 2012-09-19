@@ -21,11 +21,14 @@ public:
 
 	/**
 	 *	NOTE: You MUST provide the following 2 functions if you want to 
-	 *  return an object in a function call.
+	 *  1. return an object in a function call.		{ return object;}
+	 *  2. pass an object to a function parameter.	Func(X object){}
+	 *  3. init an object with another.				X objA(objB);
+	 *  4. assign an object with another.			objA = objB;
 	 */
 	CStockBuyModel(const CStockBuyModel& model);
- 	~CStockBuyModel(void);
-	CStockBuyModel& operator = (const CStockBuyModel& model);
+ 	CStockBuyModel& operator = (const CStockBuyModel& model);
+	~CStockBuyModel(void);
 
 public:
 	CString code;
@@ -45,6 +48,14 @@ public:
 	~CStockHoldModel(void);
 	CStockHoldModel(const CStockHoldModel& model);
 	CStockHoldModel& operator = (const CStockHoldModel& model);
+
+public:
+	CString code;
+	CString name;
+	CString buy_price;
+	CString hold_cost;
+	CString hold_amount;
+	CString even_price;
 };
 
 /**
@@ -68,5 +79,8 @@ class CStockMoneyModel
  *  NOTE: db must be valid and points to database which is already opened.
  */
 int DeleteRecordById(sqlite3* db, const char* tableName, int id);
+
+int InsertBuyRecord(sqlite3* db, const char* buyTable, const CStockBuyModel&);
+int InsertHoldRecord(sqlite3* db, const char* strTable, const CStockHoldModel&);
 
 #endif

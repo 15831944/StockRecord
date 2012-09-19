@@ -915,33 +915,60 @@ void CStockRecordDlg::OnMenuRemoveRecord( UINT uid )
 	ReloadRecords();
 }
 
+/**
+ * stock_buy table MUST be active. 
+ * That is m_nDBStatus MUST be DB_STATUS_OPENED. 
+ */
 void CStockRecordDlg::OnStockbuyAdd()
 {
+	ASSERT(m_pDatabase);
+
+	int ret = 0;
 	CStockBuyDlg buyDlg;
 	if (buyDlg.DoModal() != IDOK) {
 		return ;
 	}
 
 	/* 1. Get the data from dialog, and convert the data to model data. 
-	 * The window class is valid, but the window does not exist (hwnd is 0). 
+	 * The window class is valid, but the window doesn't exist (buyDlg.hwnd is 0). 
 	 */
 	CStockBuyModel buyModel = ConvertDlgDataToBuyModel(buyDlg);
 
 	/* 2. Insert record into stock_buy table */
+	ret = InsertBuyRecord(m_pDatabase, m_strBuyTableName.c_str(), buyModel);
 
-	/* 3. Reload records. */
+	/* 3.1 Convert buy model into hold model to prepare to insert. */
+	CStockHoldModel holdModel = ConvertBuyModelToHoldModel(buyModel);
+
+	/* 3.2. Insert record into stock_hold table. */
+	ret = InsertHoldRecord(m_pDatabase, m_StrHoldTableName.c_str(), holdModel);
+
+	/* 4. Reload records. */
+	ReloadRecords();
 }
 
 void CStockRecordDlg::OnStockholdPlanSell()
 {
+	if (!m_pDatabase || m_nDBStatus != DB_STATUS_OPENED) {
+		MessageBox("Database is not opened.", "Oops.");
+		return ;
+	}
 }
 
 void CStockRecordDlg::OnStockholdSell()
 {
+	if (!m_pDatabase || m_nDBStatus != DB_STATUS_OPENED) {
+		MessageBox("Database is not opened.", "Oops.");
+		return ;
+	}
 }
 
 void CStockRecordDlg::OnStockmoneyInout()
 {
+	if (!m_pDatabase || m_nDBStatus != DB_STATUS_OPENED) {
+		MessageBox("Database is not opened.", "Oops.");
+		return ;
+	}
 }
 
 CStockBuyModel 
@@ -962,3 +989,21 @@ CStockRecordDlg::ConvertDlgDataToBuyModel( const CStockBuyDlg& buyDlg )
 
 	return buyModel;
 }
+
+CStockHoldModel 
+CStockRecordDlg::ConvertBuyModelToHoldModel( const CStockBuyModel& buyModel)
+{
+	CStockHoldModel holdModel;
+	// TODO: Convert buy model to hold model
+	// Calculate 
+
+	return holdModel;
+}
+
+// CStockSellModel 
+// CStockRecordDlg::ConvertHoldModelToSellModel( const CStockHoldModel& holdModel)
+// {
+// 	CStockSellModel sellModel;
+// 
+// 	return sellModel;
+// }

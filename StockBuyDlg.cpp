@@ -59,7 +59,8 @@ void CStockBuyDlg::OnBnClickedOk()
 
 	/* Code must have 6 chars, and the first one char must be '0' or '6'. */
 	if (m_strCode.IsEmpty() || m_strCode.GetLength() != 6 || 
-		(m_strCode.GetAt(0) != '0' && m_strCode.GetAt(0) != '6')) {
+		!(m_strCode.GetAt(0) == '0' || m_strCode.GetAt(0) == '6' 
+			|| m_strCode.GetAt(0) == '3')) {
 		MessageBox("股票代码不正确", "Oops");
 		CEdit* pEdit = (CEdit*) GetDlgItem(IDC_EDIT_CODE);
 		pEdit->SetSel(0, -1);
