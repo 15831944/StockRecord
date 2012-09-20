@@ -272,20 +272,6 @@ CStockModelBase::~CStockModelBase(void)
 {
 }
 
-// CStockModelBase::CStockModelBase( const CStockModelBase& base )
-// {
-// 	*this = base;
-// }
-// 
-// CStockModelBase& CStockModelBase::operator=( const CStockModelBase& base )
-// {
-// 	if (this == &base)
-// 		return *this;
-// 
-// 	this->m_encodeStyle = base.m_encodeStyle;
-// 	return *this;
-// }
-
 void CStockModelBase::SetEncodeStyle( int encodeStyle )
 {
 	switch (encodeStyle) {
@@ -345,24 +331,6 @@ CStockBuyModel::~CStockBuyModel( void )
 {
 }
 
-/* If you want to assign an object to another, operator= MUST be provided. */
-// CStockBuyModel& CStockBuyModel::operator=( const CStockBuyModel& model )
-// {
-// 	if (this == &model)
-// 		return *this;
-// 
-// 	this->code = model.code;
-// 	this->name = model.name;
-// 	this->buy_price = model.buy_price;
-// 	this->buy_amount = model.buy_amount;
-// 	this->buy_date = model.buy_date;
-// 	this->stock_type = model.stock_type;
-// 
-// 	CStockModelBase::operator=(model);/* Call operator=() in base class. */
-// 
-// 	return *this;
-// }
-
 void CStockBuyModel::ConvertEncodeFormat( int targetEncode )
 {
 	if (GetEncodeStyle() == targetEncode)
@@ -403,31 +371,9 @@ CStockHoldModel::CStockHoldModel( void )
 {
 }
 
-// CStockHoldModel::CStockHoldModel( const CStockHoldModel& model )
-// 	: CStockModelBase(model)
-// {
-// 	*this = model;
-// }
 CStockHoldModel::~CStockHoldModel( void )
 {
 }
-
-// CStockHoldModel& CStockHoldModel::operator=( const CStockHoldModel& model )
-// {
-// 	if (this == &model)
-// 		return *this;
-// 	
-// 	this->code = model.code;
-// 	this->name = model.name;
-// 	this->buy_price = model.buy_price;
-// 	this->hold_cost = model.hold_cost;
-// 	this->hold_amount = model.hold_amount;
-// 	this->even_price = model.even_price;
-// 
-// 	CStockModelBase::operator=(model);
-// 
-// 	return *this;
-// }
 
 void CStockHoldModel::ConvertEncodeFormat( int targetEncode )
 {

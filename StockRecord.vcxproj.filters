@@ -25,6 +25,12 @@
     <Filter Include="源文件\New Cell Srcs">
       <UniqueIdentifier>{85c6021d-a55a-43b2-a272-f020285d6056}</UniqueIdentifier>
     </Filter>
+    <Filter Include="头文件\Dialogs_Headers">
+      <UniqueIdentifier>{813a79bc-565d-46ab-ae0d-3e89077a78b4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="源文件\Dialogs_Srcs">
+      <UniqueIdentifier>{4590e7a9-b316-4f29-9fc3-396e5f19f62a}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="ReadMe.txt" />
@@ -102,11 +108,14 @@
     <ClInclude Include="StockModel.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="StockBuyDlg.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
     <ClInclude Include="StockCalculate.h">
       <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="StockBuyDlg.h">
+      <Filter>头文件\Dialogs_Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="StockSellDlg.h">
+      <Filter>头文件\Dialogs_Headers</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -161,11 +170,14 @@
     <ClCompile Include="StockModel.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="StockBuyDlg.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
     <ClCompile Include="StockCalculate.cpp">
       <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="StockBuyDlg.cpp">
+      <Filter>源文件\Dialogs_Srcs</Filter>
+    </ClCompile>
+    <ClCompile Include="StockSellDlg.cpp">
+      <Filter>源文件\Dialogs_Srcs</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

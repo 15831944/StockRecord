@@ -21,8 +21,6 @@ class CStockModelBase
 public:
 	CStockModelBase(void);
 	~CStockModelBase(void);
-// 	CStockModelBase(const CStockModelBase& base);
-// 	CStockModelBase& operator= (const CStockModelBase& base);
 
 private:
 	enum EncodeStyle m_encodeStyle;
@@ -40,16 +38,6 @@ class CStockBuyModel : public CStockModelBase
 {
 public:
  	CStockBuyModel(void);
-
-	/**
-	 *	NOTE: You MUST provide the following 2 functions if you want to 
-	 *  1. return an object in a function call.		{ return object;}
-	 *  2. pass an object to a function parameter.	Func(X object){}
-	 *  3. init an object with another.				X objA(objB);
-	 *  4. assign an object with another.			objA = objB;
-	 */
-	//CStockBuyModel(const CStockBuyModel& model);
- 	//CStockBuyModel& operator = (const CStockBuyModel& model);
 	~CStockBuyModel(void);
 
 public:
@@ -73,8 +61,6 @@ class CStockHoldModel : public CStockModelBase
 public:
 	CStockHoldModel(void);
 	~CStockHoldModel(void);
-	//CStockHoldModel(const CStockHoldModel& model);
-	//CStockHoldModel& operator = (const CStockHoldModel& model);
 
 	void ConvertEncodeFormat(int targetEncode);
 

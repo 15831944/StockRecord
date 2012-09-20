@@ -265,15 +265,20 @@ void CStockRecordDlg::StoreRecordId( int id )
  */
 int CStockRecordDlg::SetGirdData( int nRowCount, int nColCount, char** result )
 {
-	// TODO: Show info when there is no data in the database
+	/* No data in database, ask to add */
 	if (nRowCount <= 0 || nColCount <= 0 || !result) {
 		m_GridCtrl.DeleteAllItems();
 		m_GridCtrl.ShowWindow(SW_HIDE);
 
-		if (MessageBox("没有记录，是否要增加记录？", "Confirm", MB_YESNO) == IDYES) {
-			//return;
+		if (m_enumRecordTable == T_STOCKBUY) {
+			if (MessageBox("没有记录，是否要增加记录？", "Confirm", MB_YESNO) == IDYES) {
+				OnStockbuyAdd();
+			}
+		} else if (m_enumRecordTable == T_STOCKMONEY) {
+			if (MessageBox("没有记录，是否要增加记录？", "Confirm", MB_YESNO) == IDYES) {
+				OnStockmoneyInout();
+			}
 		}
-
 		return ERR;
 	}
 	
@@ -294,14 +299,10 @@ int CStockRecordDlg::SetGirdData( int nRowCount, int nColCount, char** result )
 	m_GridCtrl.SetFixedRowCount(1);
 	m_GridCtrl.SetFixedColumnCount(1);
 
-	// TODO: How to set font.
-
 	/* Clear corresponding m_vecStock*Ids to prepare to make a new display. */
 	ClearRecordIds();
 
-	/**
-	 *	1. Show name of fields, before 'nCol' of result.
-	 */
+	/* 1. Show name of fields, before 'nCol' of result. */
 	for (int colIdx = 0; colIdx < nColCount; ++colIdx) {
 				
 		char* data = result[colIdx];
@@ -327,7 +328,7 @@ int CStockRecordDlg::SetGirdData( int nRowCount, int nColCount, char** result )
 		CClientDC dc(this);
 		sz = dc.GetTextExtent(strOutName.c_str(), strOutName.length());
 		if (sz.cx > 0)
-			m_GridCtrl.SetColumnWidth(colIdx, (int)sz.cx);
+			m_GridCtrl.SetColumnWidth(colIdx, (int)sz.cx + 3);
 	}
 
 	/**
@@ -976,11 +977,11 @@ void CStockRecordDlg::OnStockholdSell()
 		return ;
 	}
 
-	// TODO:
+	// TODO: sell hold record.
 	/**
 	 *	1. Query the hold record according to the focused cell's row.
 	 *  2. Push code, name... to sell dialog.
-	 *  3. When IDOK, get the amount to be selled.
+	 *  3. When IDOK, get the amount to sell.
 	 *     Compare sellAmount with holdModel's hold_amount.
 	 *  4. Calculate each_earn
 	 *  5. Convert to sellModel, and insert it to stock_sell.
@@ -991,6 +992,28 @@ void CStockRecordDlg::OnStockholdSell()
 	int id = GetActiveRecordIdBySeqNo(m_GridCtrl.GetFocusCell().row);
 	CStockHoldModel holdModel = SelectHoldRecordById(m_pDatabase,	\
 		m_StrHoldTableName.c_str(), id);
+
+	/* 2. Popup sell stock dialog with appropriate values. */
+	if (holdModel.GetEncodeStyle() == ENCODE_STYLE_UTF8)
+		holdModel.ConvertEncodeFormat(ENCODE_STYLE_GB2312);
+	int nHoldAmount = atoi((LPCTSTR)holdModel.hold_amount);
+
+	CStockSellDlg sellDlg;
+	sellDlg.m_strCode = holdModel.code;	// init dialog's edit values.
+	sellDlg.m_strName = holdModel.name;
+	sellDlg.m_nSellAmount = nHoldAmount;
+	sellDlg.SetHoldAmount(nHoldAmount);
+	
+	if (sellDlg.DoModal() != IDOK)
+		return ;
+
+	/* 3. Get sell amount & sell price from dialog */
+	if (sellDlg.m_nSellAmount == nHoldAmount) {
+		/* Sell all of held stock, remove record in stock_hold */
+
+	} else if (sellDlg.m_nSellAmount == nHoldAmount) {
+		/* Sell part of held stock, update record in stock_hold */
+	}
 
 
 }

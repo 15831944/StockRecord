@@ -11,6 +11,7 @@ extern "C" {
 
 #include "StockModel.h"
 #include "StockBuyDlg.h"
+#include "StockSellDlg.h"
 
 #include <vector>
 using namespace std;

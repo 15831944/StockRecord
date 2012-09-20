@@ -30,15 +30,15 @@ CStockBuyDlg::~CStockBuyDlg()
 void CStockBuyDlg::DoDataExchange(CDataExchange* pDX)
 {
 	CDialogEx::DoDataExchange(pDX);
-	DDX_Text(pDX, IDC_EDIT_CODE, m_strCode);
+	DDX_Text(pDX, IDC_EDIT_BUY_CODE, m_strCode);
 	DDV_MaxChars(pDX, m_strCode, 6);
-	DDX_Text(pDX, IDC_EDIT_NAME, m_strName);
+	DDX_Text(pDX, IDC_EDIT_BUY_NAME, m_strName);
 	DDV_MaxChars(pDX, m_strName, 10);
-	DDX_Text(pDX, IDC_EDIT_BUYPRICE, m_fBuyPrice);
+	DDX_Text(pDX, IDC_EDIT_BUY_PRICE, m_fBuyPrice);
 	DDV_MinMaxFloat(pDX, m_fBuyPrice, (float)0.01, (float)10000.0);
 	DDX_Text(pDX, IDC_EDIT_BUY_AMOUNT, m_nBuyAmount);
 	DDV_MinMaxInt(pDX, m_nBuyAmount, 1, 1000000);
-	DDX_DateTimeCtrl(pDX, IDC_DATETIMEPICKER1, m_oleDataTime);
+	DDX_DateTimeCtrl(pDX, IDC_BUY_DATE, m_oleDataTime);
 }
 
 
@@ -62,7 +62,7 @@ void CStockBuyDlg::OnBnClickedOk()
 		!(m_strCode.GetAt(0) == '0' || m_strCode.GetAt(0) == '6' 
 			|| m_strCode.GetAt(0) == '3')) {
 		MessageBox("股票代码不正确", "Oops");
-		CEdit* pEdit = (CEdit*) GetDlgItem(IDC_EDIT_CODE);
+		CEdit* pEdit = (CEdit*) GetDlgItem(IDC_EDIT_BUY_CODE);
 		pEdit->SetSel(0, -1);
 		pEdit->SetFocus();
 		return ;
@@ -77,7 +77,7 @@ void CStockBuyDlg::OnBnClickedOk()
 	/* Check name */
 	if (m_strName.IsEmpty()) {
 		MessageBox("股票名称不能为空！","Oops!");
-		CEdit* pEdit = (CEdit*)GetDlgItem(IDC_EDIT_NAME);
+		CEdit* pEdit = (CEdit*)GetDlgItem(IDC_EDIT_BUY_NAME);
 		pEdit->SetSel(0, -1);
 		pEdit->SetFocus();
 		return ;
