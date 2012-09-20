@@ -19,8 +19,9 @@ CStockFees::~CStockFees(void)
 {
 }
 
-void 
-CStockFees::StockHoldCalculate( bool bStockType, float fBuyPrice, int nBuyAmount )
+/* Calculate hold cost by stock_type, buy_price & buy_amount. */
+float 
+CStockFees::CalculateHoldCostByBuy( bool bStockType, float fBuyPrice, int nBuyAmount )
 {
 	m_fBuyStockMoney = Round(fBuyPrice * nBuyAmount, 2);
 	m_fBuyCommiMoney = Round(fBuyPrice * nBuyAmount * m_fCommisionRate, 2);
@@ -37,17 +38,45 @@ CStockFees::StockHoldCalculate( bool bStockType, float fBuyPrice, int nBuyAmount
 	/* hold cost */
 	m_fHoldCost = Round((m_fBuyStockMoney + m_fBuyCommiMoney +	\
 		m_fBuyTransferMoney) / nBuyAmount, 3);
+	return m_fHoldCost;
 
-	/* even price */
-	m_fEvenPrice = (m_fBuyCommiMoney + m_fBuyTransferMoney * 2 + m_fBuyStockMoney) \
-		/ (1.0f - m_fStampTaxRate - m_fCommisionRate) / nBuyAmount;
-	float fEvenSellCommiMoney = Round(m_fEvenPrice * nBuyAmount * m_fCommisionRate, 2);
-	if (fEvenSellCommiMoney < 5.0f) {
-		m_fEvenPrice = (m_fBuyCommiMoney + m_fBuyTransferMoney * 2 + m_fBuyStockMoney \
-			+ 5.0f) / (1.0f - m_fStampTaxRate) / nBuyAmount;
+// 	/* even price */
+// 	m_fEvenPrice = (m_fBuyCommiMoney + m_fBuyTransferMoney * 2 + m_fBuyStockMoney) \
+// 		/ (1.0f - m_fStampTaxRate - m_fCommisionRate) / nBuyAmount;
+// 	float fEvenSellCommiMoney = Round(m_fEvenPrice * nBuyAmount * m_fCommisionRate, 2);
+// 	if (fEvenSellCommiMoney < 5.0f) {
+// 		m_fEvenPrice = (m_fBuyCommiMoney + m_fBuyTransferMoney * 2 + m_fBuyStockMoney \
+// 			+ 5.0f) / (1.0f - m_fStampTaxRate) / nBuyAmount;
+// 	}
+// 
+// 	m_fEvenPrice = Round(m_fEvenPrice, 3);
+}
+
+/**
+ *	Calculate even_price by hold_cost and hold_amount.
+ *  NOTE, the even_price and hold_amount should be calculated correctly.
+ */
+float 
+CStockFees::CalcuEvenPriceByHold( bool bStockType, float fHoldCost, int nHoldAmount )
+{
+	float fSellTransferMoney = 0.0f;
+	if (STOCK_TYPE_SHANG_HAI == bStockType) {
+		fSellTransferMoney = Round((float)nHoldAmount * m_fTransferRate, 2);
+		if(fSellTransferMoney<=1.0f)
+			fSellTransferMoney = 1.0f;
 	}
 
+	m_fEvenPrice = (fHoldCost * nHoldAmount + fSellTransferMoney) / \
+		(1.0f - m_fStampTaxRate - m_fCommisionRate) / nHoldAmount;
+
+	float fSellCommiMoney = Round(m_fEvenPrice * m_fCommisionRate * nHoldAmount, 2);
+	if (fSellCommiMoney < 5.0f) {
+		m_fEvenPrice = (fHoldCost * nHoldAmount + fSellTransferMoney + 5.0f) / \
+			(1.0f - m_fStampTaxRate) / nHoldAmount;
+	}
 	m_fEvenPrice = Round(m_fEvenPrice, 3);
+
+	return m_fEvenPrice;
 }
 
 float Round( float fValue, int precision, int roundway /*= ROUND_ZRBS*/ )

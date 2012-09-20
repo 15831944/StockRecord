@@ -32,7 +32,8 @@ public:
 	float m_fEvenPrice;
 
 public:
-	void StockHoldCalculate(bool bStockType, float fBuyPrice, int nBuyAmount);
+	float CalculateHoldCostByBuy(bool bStockType, float fBuyPrice, int nBuyAmount);
+	float CalcuEvenPriceByHold(bool bStockType, float fHoldCost, int nHoldAmount);
 };
 
 

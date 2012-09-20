@@ -90,13 +90,35 @@ InsertHoldRecord(sqlite3* db, const char* strTable, const CStockHoldModel& model
 		return ERR;
 	}
 
+	string sql("");
+	sql = sql
+		+ " BEGIN TRANSACTION; " 
+		+ " INSERT INTO " + strTable
+		+ " (code, name, buy_price, hold_cost, hold_amount, even_price) "
+		+ " VALUES( "
+		+ " \"" + (LPCTSTR)model.code + "\", "
+		/* TOBE optimized, only convert name to UTF8 from GB2312 when inserting */
+		+ " \"" + CChineseCodeLib::GB2312ToUTF8((LPCTSTR)model.name) + "\", "
+		+  (LPCTSTR)model.buy_price + ", "
+		+  (LPCTSTR)model.hold_cost + ", "
+		+  (LPCTSTR)model.hold_amount + ", "
+		+  (LPCTSTR)model.even_price
+		+ " ); "
+		+ " END TRANSACTION; ";
+
+	char* errmsg = NULL;
 	int ret = 0;
-	// TODO: insert hold record.
-	/* 1. Check out whether stock(code) is in stock_hold table. */
+	ret = sqlite3_exec(db, sql.c_str(), NULL, NULL, &errmsg);
 
-	/* 2.1 If stock is in stock_hold table, update hold record. */
-
-	/* 2.2 If stock is not in stock_hold table, insert hold record. */
+	/* Handle error message when error occurs. */
+	if (errmsg) {
+		CString str;
+		str.Format("%s", errmsg);
+		AfxMessageBox(str);
+		sqlite3_free(errmsg);
+		errmsg = NULL;
+		return ret;
+	}
 
 	return ret;
 }
@@ -194,6 +216,7 @@ CStockBuyModel& CStockBuyModel::operator=( const CStockBuyModel& model )
 	this->buy_price = model.buy_price;
 	this->buy_amount = model.buy_amount;
 	this->buy_date = model.buy_date;
+	this->stock_type = model.stock_type;
 
 	return *this;
 }
@@ -229,6 +252,7 @@ CStockHoldModel& CStockHoldModel::operator=( const CStockHoldModel& model )
 	this->buy_price = model.buy_price;
 	this->hold_cost = model.hold_cost;
 	this->hold_amount = model.hold_amount;
+	this->even_price = model.even_price;
 
 	return *this;
 }

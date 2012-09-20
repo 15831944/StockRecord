@@ -996,7 +996,6 @@ CStockHoldModel
 CStockRecordDlg::ConvertBuyModelToHoldModel( const CStockBuyModel& buyModel)
 {
 	CStockHoldModel holdModel;
-	// TODO: Convert buy model to hold model
 
 	/* Checkout whether the stock(code) is already in stock_hold.
 	 * If no same code in table stock_hold, then the returned object
@@ -1014,41 +1013,42 @@ CStockRecordDlg::ConvertBuyModelToHoldModel( const CStockBuyModel& buyModel)
  	holdModel.name = buyModel.name;
 	holdModel.buy_price = buyModel.buy_price;
 
-	// TODO: calculate here firstly
 	CStockFees stockFees;
 	float fBuyPrice = (float)atof((LPCTSTR)buyModel.buy_price);
-	int nBuyAmount = atoi((LPCTSTR)buyModel.buy_amount);
-	stockFees.StockHoldCalculate(buyModel.stock_type, fBuyPrice, nBuyAmount);
+	int nCurrBuyAmount = atoi((LPCTSTR)buyModel.buy_amount);
+	int nNewHoldAmount = nCurrBuyAmount;		// init
 
+	float fCurrHoldCost = stockFees.CalculateHoldCostByBuy(buyModel.stock_type, \
+		fBuyPrice, nCurrBuyAmount);
+	float fNewHoldCost = fCurrHoldCost;			// init
+
+	float fEvenPrice = stockFees.CalcuEvenPriceByHold(buyModel.stock_type, \
+		fCurrHoldCost, nCurrBuyAmount);
+	
 	/* 2.1 Stock has already existed in stock_hold. Recalculate its values. */
 	if (isHoldTableHasSameStock) {
 		float fPreHoldCost = (float)atof((LPCTSTR)holdModel.hold_cost);
 		int nPreHoldAmount = atoi((LPCTSTR)holdModel.hold_amount);
-		int nCurrBuyAmount = atoi((LPCTSTR)buyModel.buy_amount);
-		int nNewHoldAmount = nPreHoldAmount + nCurrBuyAmount;
+		nNewHoldAmount = nPreHoldAmount + nCurrBuyAmount;
 
 		/* new hold_amount */
 		holdModel.hold_amount.Format("%d", nNewHoldAmount);
 
 		/* new hold_cost */
-		float fNewHoldCost = (fPreHoldCost * nPreHoldAmount 
-			+ stockFees.m_fHoldCost * nCurrBuyAmount) / nNewHoldAmount;
-		fNewHoldCost = Round(fNewHoldCost, 3);
-		holdModel.hold_cost.Format("%.3f", fNewHoldCost);
+		fNewHoldCost = (fPreHoldCost * nPreHoldAmount 
+			+ fCurrHoldCost * nCurrBuyAmount) / nNewHoldAmount;
+		stockFees.m_fHoldCost = fNewHoldCost;
 
 		/* new even_price */
-		float fSellTransferMoney = 0.0f;
-		if (buyModel.stock_type == STOCK_TYPE_SHANG_HAI) {
-			fSellTransferMoney = Round((float)nNewHoldAmount *	\
-				stockFees.m_fTransferRate, 2);
-		}
-
-
-
+		fEvenPrice = stockFees.CalcuEvenPriceByHold(buyModel.stock_type,	\
+			fNewHoldCost, nNewHoldAmount);
 	} 
 
-	holdModel.hold_cost.Format("%.3f", stockFees.m_fHoldCost);
-	holdModel.even_price.Format("%.3f", stockFees.m_fEvenPrice);
+	fNewHoldCost = Round(fNewHoldCost, 3);
+	fEvenPrice = Round(fEvenPrice, 3);
+	holdModel.hold_amount.Format("%d", nNewHoldAmount);
+	holdModel.hold_cost.Format("%.3f", fNewHoldCost);
+	holdModel.even_price.Format("%.3f", fEvenPrice);
 
 	return holdModel;
 }
