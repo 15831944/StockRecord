@@ -15,6 +15,13 @@ extern "C" {
 #include <vector>
 using namespace std;
 
+enum RECORDTABLE{		// which table is displayed now.
+	T_STOCKBUY = 0,		// stock_buy table
+	T_STOCKHOLD,		// stock_hold table
+	T_STOCKSELL,		// stock_sell table
+	T_STOCKMONEY		// stock_money table
+};
+
 // CStockRecordDlg ¶Ô»°¿ò
 class CStockRecordDlg : public CDialogEx
 {
@@ -55,6 +62,7 @@ protected:
 
 private:
 	BOOL IsTableNamesValid(void);
+	void MakeMenuItemCheckedByActiveTable(void);
 
 	/** Get the left top item's data to display according opened table now */
 	void SetLeftTopItemData(void);
@@ -70,7 +78,7 @@ private:
 	/* Return a real model, not model's reference. */
 	CStockBuyModel	 ConvertDlgDataToBuyModel(const CStockBuyDlg& buyDlg);
 	CStockHoldModel  ConvertBuyModelToHoldModel(const CStockBuyModel&);
-//	CStockSellModel  ConvertHoldModelToSellModel(const CStockHoldModel&);
+	CStockSellModel  ConvertHoldModelToSellModel(const CStockHoldModel&);
 	CStockMoneyModel ConvertDlgDataToMoneyModel();
 
 public:
@@ -109,12 +117,7 @@ private:
 	sqlite3* m_pDatabase;
 	int		m_nDBStatus;
 
-	enum RECORDTABLE{		// which table is displayed now.
-		T_STOCKBUY = 0,		// stock_buy table
-		T_STOCKHOLD,		// stock_hold table
-		T_STOCKSELL,		// stock_sell table
-		T_STOCKMONEY		// stock_money table
-	} m_enumRecordTable;
+	RECORDTABLE m_enumRecordTable;
 
 	/**
 	 *	Store table's ids, the seqNo is the index of vector.

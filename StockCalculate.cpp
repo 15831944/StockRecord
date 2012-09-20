@@ -38,18 +38,8 @@ CStockFees::CalculateHoldCostByBuy( bool bStockType, float fBuyPrice, int nBuyAm
 	/* hold cost */
 	m_fHoldCost = Round((m_fBuyStockMoney + m_fBuyCommiMoney +	\
 		m_fBuyTransferMoney) / nBuyAmount, 3);
-	return m_fHoldCost;
 
-// 	/* even price */
-// 	m_fEvenPrice = (m_fBuyCommiMoney + m_fBuyTransferMoney * 2 + m_fBuyStockMoney) \
-// 		/ (1.0f - m_fStampTaxRate - m_fCommisionRate) / nBuyAmount;
-// 	float fEvenSellCommiMoney = Round(m_fEvenPrice * nBuyAmount * m_fCommisionRate, 2);
-// 	if (fEvenSellCommiMoney < 5.0f) {
-// 		m_fEvenPrice = (m_fBuyCommiMoney + m_fBuyTransferMoney * 2 + m_fBuyStockMoney \
-// 			+ 5.0f) / (1.0f - m_fStampTaxRate) / nBuyAmount;
-// 	}
-// 
-// 	m_fEvenPrice = Round(m_fEvenPrice, 3);
+	return m_fHoldCost;
 }
 
 /**

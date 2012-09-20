@@ -46,6 +46,10 @@ using namespace std;
 #define STOCK_TYPE_SHANG_HAI	0
 #define STOCK_TYPE_SHEN_ZHEN	1
 
+enum EncodeStyle{
+	ENCODE_STYLE_GB2312 = 0,
+	ENCODE_STYLE_UTF8
+};
 
 #ifdef _UNICODE
 #if defined _M_IX86

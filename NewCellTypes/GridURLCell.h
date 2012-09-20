@@ -11,7 +11,7 @@
 
 #include "../GridCtrl_src/GridCell.h"
 
-typedef struct {
+typedef struct tagURLStruct{
     LPCTSTR szURLPrefix;
     size_t  nLength;
 } URLStruct;

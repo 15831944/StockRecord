@@ -14,9 +14,29 @@ extern "C" {
 };
 
 /**
+ * Base model 
+ */
+class CStockModelBase
+{
+public:
+	CStockModelBase(void);
+	~CStockModelBase(void);
+// 	CStockModelBase(const CStockModelBase& base);
+// 	CStockModelBase& operator= (const CStockModelBase& base);
+
+private:
+	enum EncodeStyle m_encodeStyle;
+
+public:
+	virtual  void SetEncodeStyle(int encodeStyle);
+	virtual  int GetEncodeStyle(void) const;
+
+};
+
+/**
  *	Stock buy record model.
  */
-class CStockBuyModel
+class CStockBuyModel : public CStockModelBase
 {
 public:
  	CStockBuyModel(void);
@@ -28,31 +48,43 @@ public:
 	 *  3. init an object with another.				X objA(objB);
 	 *  4. assign an object with another.			objA = objB;
 	 */
-	CStockBuyModel(const CStockBuyModel& model);
- 	CStockBuyModel& operator = (const CStockBuyModel& model);
+	//CStockBuyModel(const CStockBuyModel& model);
+ 	//CStockBuyModel& operator = (const CStockBuyModel& model);
 	~CStockBuyModel(void);
 
 public:
+	int id;
 	CString code;
 	CString name;
 	CString buy_price;
 	CString buy_amount;
 	CString buy_date;
 	bool stock_type;
+
+public:
+	void ConvertEncodeFormat(int targetEncode);
 };
 
 /**
  *	Stock hold record model.
  */
-class CStockHoldModel
+class CStockHoldModel : public CStockModelBase
 {
 public:
 	CStockHoldModel(void);
 	~CStockHoldModel(void);
-	CStockHoldModel(const CStockHoldModel& model);
-	CStockHoldModel& operator = (const CStockHoldModel& model);
+	//CStockHoldModel(const CStockHoldModel& model);
+	//CStockHoldModel& operator = (const CStockHoldModel& model);
+
+	void ConvertEncodeFormat(int targetEncode);
 
 public:
+	/**
+	 * id will be inited to -1, to indicate there is no record in db. 
+	 * If id is not -1, the model represents a record which already exists in db.
+	 * In this case, id is the value of actual record id in database.
+	 */
+	int id;		
 	CString code;
 	CString name;
 	CString buy_price;
@@ -83,11 +115,18 @@ class CStockMoneyModel
  */
 int DeleteRecordById(sqlite3* db, const char* tableName, int id);
 
-int InsertBuyRecord(sqlite3* db, const char* buyTable, const CStockBuyModel&);
-int InsertHoldRecord(sqlite3* db, const char* strTable, const CStockHoldModel&);
+/** 
+ * Insert / update records held in model into table stored in sqlite database.
+ * The model's member's format MUST be UTF8. 
+ */
+int InsertBuyRecord(sqlite3* db, const char* buyTable, const CStockBuyModel& model);
+int InsertHoldRecord(sqlite3* db, const char* strTable, const CStockHoldModel& model);
+int UpdateHoldRecord(sqlite3* db, const char* strTable, const CStockHoldModel& model);
 
 int StockHoldCallback(void* para, int nCol, char** colValue, char** colName);
 CStockHoldModel 
 SelectHoldRecordByCode(sqlite3*db, const char* strTable, const char* code);
+CStockHoldModel
+SelectHoldRecordById(sqlite3*db, const char* strTable, int id);
 
 #endif

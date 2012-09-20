@@ -263,12 +263,17 @@ void CStockRecordDlg::StoreRecordId( int id )
  *  nCol - How many columns of the data.
  *  result - All the queried data are stored in memory pointed by result.
  */
-int CStockRecordDlg::SetGirdData( int nRow, int nCol, char** result )
+int CStockRecordDlg::SetGirdData( int nRowCount, int nColCount, char** result )
 {
 	// TODO: Show info when there is no data in the database
-	if (nRow <= 0 || nCol <= 0 || !result) {
+	if (nRowCount <= 0 || nColCount <= 0 || !result) {
 		m_GridCtrl.DeleteAllItems();
 		m_GridCtrl.ShowWindow(SW_HIDE);
+
+		if (MessageBox("没有记录，是否要增加记录？", "Confirm", MB_YESNO) == IDYES) {
+			//return;
+		}
+
 		return ERR;
 	}
 	
@@ -284,8 +289,8 @@ int CStockRecordDlg::SetGirdData( int nRow, int nCol, char** result )
 	 */
 	m_GridCtrl.DeleteAllItems();		// delete all to display new data.
 	m_GridCtrl.ShowWindow(SW_SHOW);
-	m_GridCtrl.SetColumnCount(nCol);
-	m_GridCtrl.SetRowCount(nRow + 1);	// + 1 to display the field names.
+	m_GridCtrl.SetColumnCount(nColCount);
+	m_GridCtrl.SetRowCount(nRowCount + 1);	// + 1 to display the field names.
 	m_GridCtrl.SetFixedRowCount(1);
 	m_GridCtrl.SetFixedColumnCount(1);
 
@@ -297,7 +302,7 @@ int CStockRecordDlg::SetGirdData( int nRow, int nCol, char** result )
 	/**
 	 *	1. Show name of fields, before 'nCol' of result.
 	 */
-	for (int colIdx = 0; colIdx < nCol; ++colIdx) {
+	for (int colIdx = 0; colIdx < nColCount; ++colIdx) {
 				
 		char* data = result[colIdx];
 		if (!data || strlen(data) == 0)
@@ -322,7 +327,7 @@ int CStockRecordDlg::SetGirdData( int nRow, int nCol, char** result )
 		CClientDC dc(this);
 		sz = dc.GetTextExtent(strOutName.c_str(), strOutName.length());
 		if (sz.cx > 0)
-			m_GridCtrl.SetColumnWidth(colIdx, (int)sz.cx - 5);
+			m_GridCtrl.SetColumnWidth(colIdx, (int)sz.cx);
 	}
 
 	/**
@@ -331,8 +336,8 @@ int CStockRecordDlg::SetGirdData( int nRow, int nCol, char** result )
 	 *  Display 'seqNo' in grid view instead of 'id' from database.
 	 */
 	int seqNo = 1;					// sqe_no is started from 1.
-	for (int rowIdx = 1; rowIdx < nRow + 1; ++rowIdx) {
-		for (int colIdx = 0; colIdx < nCol; ++colIdx) {
+	for (int rowIdx = 1; rowIdx < nRowCount + 1; ++rowIdx) {
+		for (int colIdx = 0; colIdx < nColCount; ++colIdx) {
 
 			/* 2.1 Display 'seqNo' in col 0, instead of 'id'. */
 			if (colIdx == 0) {
@@ -345,7 +350,7 @@ int CStockRecordDlg::SetGirdData( int nRow, int nCol, char** result )
 				 *  Make a relation between 'id' and 'seqNo'.
 				 *  Which will cause that the gird can not order by column.
 				 */
-				char* idStr = result[rowIdx * nCol + colIdx];
+				char* idStr = result[rowIdx * nColCount + colIdx];
 				int id = -1;
 				if (idStr)
 					id = atoi(idStr);
@@ -358,7 +363,7 @@ int CStockRecordDlg::SetGirdData( int nRow, int nCol, char** result )
 
 			/* 2.2 Display data, Convert UTF8 word to GB2312 format. */
 			string strOut;			
-			char* data = result[rowIdx * nCol + colIdx];
+			char* data = result[rowIdx * nColCount + colIdx];
 			string strData = CChineseCodeLib::UTF8ToGB2312(data);
 			m_GridCtrl.SetItemText(rowIdx, colIdx, strData.c_str());
 		}
@@ -661,24 +666,28 @@ BOOL CStockRecordDlg::IsTableNamesValid( void )
 void CStockRecordDlg::OnMenuHoldRecord()
 {
 	m_enumRecordTable = T_STOCKHOLD;
+	MakeMenuItemCheckedByActiveTable();		
 	QueryRecordsByTableName(m_StrHoldTableName.c_str());
 }
 
 void CStockRecordDlg::OnMenuBuyRecord()
 {
 	m_enumRecordTable = T_STOCKBUY;
+	MakeMenuItemCheckedByActiveTable();
 	QueryRecordsByTableName(m_strBuyTableName.c_str());
 }
 
 void CStockRecordDlg::OnMenuSellRecord()
 {
 	m_enumRecordTable = T_STOCKSELL;
+	MakeMenuItemCheckedByActiveTable();
 	QueryRecordsByTableName(m_strSellTableName.c_str());
 }
 
 void CStockRecordDlg::OnMenuMoneyRecord()
 {
 	m_enumRecordTable = T_STOCKMONEY;
+	MakeMenuItemCheckedByActiveTable();
 	QueryRecordsByTableName(m_strMoneyTableName.c_str());
 }
 
@@ -854,7 +863,7 @@ void CStockRecordDlg::OnMenuRemoveRecord( UINT uid )
 	ASSERT(m_pDatabase && m_nDBStatus == DB_STATUS_OPENED);
 
 	/**
-	 *	1. Get selected cells and focused cell.
+	 *	0. Get selected cells and focused cell.
 	 *  Note that the selected cells may not be in succession.
 	 *  So you should check every cell to see whether it is really selected.
 	 *  When a cell is selected, the record in the row is to be deleted.
@@ -866,36 +875,31 @@ void CStockRecordDlg::OnMenuRemoveRecord( UINT uid )
 	cellRange = m_GridCtrl.GetSelectedCellRange();
 	int ret = 0;
 
+	/* 1. Firstly, delete the record where focused cell is located. */
+	int id = GetActiveRecordIdBySeqNo(focusedCell.row);
+	ret = DeleteRecordById(m_pDatabase, strTableName.c_str(), id);
+
 	/**
 	 * 1.1 No selected cells, or the selected cell range is not valid,
 	 * just delete record where focused cell is located. 
 	 */
 	if (selCount <= 0 || !IsCellRangeValid(cellRange)) {
-		int id = GetActiveRecordIdBySeqNo(focusedCell.row);
-		ret = DeleteRecordById(m_pDatabase, strTableName.c_str(), id);
 		ReloadRecords();
 		return ;
 	}
-
+	
 	/**
-	 * 1.2 Focused cell is not in the range of selected rows range.
-	 * Firstly, delete focused record, 
-	 * then, the selected records.
-	 */
-	if (!IsFocusedCellInSelectedRows(focusedCell, cellRange)) {
-
-		/* 1.2.1 Firstly, delete the record where focused cell is located. */
-		int id = GetActiveRecordIdBySeqNo(focusedCell.row);
-		ret = DeleteRecordById(m_pDatabase, strTableName.c_str(), id);
-	}
-
-	/**
-	 *	1.2.2 Secondly, delete selected records by traversing every cell
+	 *	2. Secondly, delete selected records by traversing every cell
 	 *  in the range to see whether it is really selected.
+	 *  Except the focused one (if focused one is in the selected range), 
+	 *  because it has been removed already.
 	 */
 	for (int rowIdx = cellRange.GetMinRow(); 
 		 rowIdx <= cellRange.GetMaxRow(); 
 		 ++rowIdx) {
+
+		if (rowIdx == focusedCell.row)	// skip removed focused record.
+			continue;
 
 		for (int colIdx = cellRange.GetMinCol();
 			colIdx <= cellRange.GetMaxCol();
@@ -912,7 +916,6 @@ void CStockRecordDlg::OnMenuRemoveRecord( UINT uid )
 		} // inner for
 	} // outer for
 
-	/** After the deletion is done, reload data from database. */
 	ReloadRecords();
 }
 
@@ -929,6 +932,8 @@ void CStockRecordDlg::OnStockbuyAdd()
 	if (buyDlg.DoModal() != IDOK) {
 		return ;
 	}
+	
+	m_enumRecordTable = T_STOCKBUY;
 
 	/* 1. Get the data from dialog, and convert the data to model data. 
 	 * The window class is valid, but the window doesn't exist (buyDlg.hwnd is 0). 
@@ -936,15 +941,23 @@ void CStockRecordDlg::OnStockbuyAdd()
 	CStockBuyModel buyModel = ConvertDlgDataToBuyModel(buyDlg);
 
 	/* 2. Insert record into stock_buy table */
+	if (buyModel.GetEncodeStyle() == ENCODE_STYLE_GB2312)
+		buyModel.ConvertEncodeFormat(ENCODE_STYLE_UTF8);
 	ret = InsertBuyRecord(m_pDatabase, m_strBuyTableName.c_str(), buyModel);
 
-	/* 3.1 Convert buy model into hold model to prepare to insert. */
+	/* 3. Convert buy model into hold model to prepare to insert. */
 	CStockHoldModel holdModel = ConvertBuyModelToHoldModel(buyModel);
 
-	/* 3.2. Insert record into stock_hold table. */
-	ret = InsertHoldRecord(m_pDatabase, m_StrHoldTableName.c_str(), holdModel);
+	/* 4. Insert record into stock_hold table. */
+	if (holdModel.GetEncodeStyle() == ENCODE_STYLE_GB2312)
+		holdModel.ConvertEncodeFormat(ENCODE_STYLE_UTF8);
 
-	/* 4. Reload records. */
+	if (holdModel.id < 0) /* No same record in stock_hold, insert a new one */
+		ret = InsertHoldRecord(m_pDatabase, m_StrHoldTableName.c_str(), holdModel);
+	else	/* same record exists in stock_hold, update it */
+		ret = UpdateHoldRecord(m_pDatabase, m_StrHoldTableName.c_str(), holdModel);
+
+	/* 5. Reload records. */
 	ReloadRecords();
 }
 
@@ -962,6 +975,24 @@ void CStockRecordDlg::OnStockholdSell()
 		MessageBox("Database is not opened.", "Oops.");
 		return ;
 	}
+
+	// TODO:
+	/**
+	 *	1. Query the hold record according to the focused cell's row.
+	 *  2. Push code, name... to sell dialog.
+	 *  3. When IDOK, get the amount to be selled.
+	 *     Compare sellAmount with holdModel's hold_amount.
+	 *  4. Calculate each_earn
+	 *  5. Convert to sellModel, and insert it to stock_sell.
+	 *  6. Get the total_earn and update the first record.
+	 */
+
+	/* 1. Query the hold record according to the focused cell's row. */
+	int id = GetActiveRecordIdBySeqNo(m_GridCtrl.GetFocusCell().row);
+	CStockHoldModel holdModel = SelectHoldRecordById(m_pDatabase,	\
+		m_StrHoldTableName.c_str(), id);
+
+
 }
 
 void CStockRecordDlg::OnStockmoneyInout()
@@ -989,22 +1020,27 @@ CStockRecordDlg::ConvertDlgDataToBuyModel( const CStockBuyDlg& buyDlg )
 	int day		= buyDlg.m_oleDataTime.GetDay();
 	buyModel.buy_date.Format("%04d-%02d-%02d", year, month, day);
 
+	buyModel.SetEncodeStyle(ENCODE_STYLE_GB2312);
+
 	return buyModel;
 }
 
 CStockHoldModel 
 CStockRecordDlg::ConvertBuyModelToHoldModel( const CStockBuyModel& buyModel)
 {
-	CStockHoldModel holdModel;
-
 	/* Checkout whether the stock(code) is already in stock_hold.
-	 * If no same code in table stock_hold, then the returned object
+	 * If no same stock in table stock_hold, then the returned object
 	 * will be an empty object (empty CString as its members).
+	 * And its holdModel's id will be -1.
+	 *
+	 * If the stock is already in the stock_hold, then holdModel's id will
+	 * be the actual id value in the database.
 	 */
+	CStockHoldModel holdModel;
 	holdModel = SelectHoldRecordByCode(m_pDatabase, 
 		m_StrHoldTableName.c_str(), (LPCTSTR)buyModel.code);
 	bool isHoldTableHasSameStock = !(holdModel.code.IsEmpty());
-
+	
 	/* The first 3 fields will be written by data from buyModel, 
 	 * no matter whether the stock exists in stock_hold table.
 	 * Other fields' values will be recalculated if stock exists in stock_hold.
@@ -1025,14 +1061,15 @@ CStockRecordDlg::ConvertBuyModelToHoldModel( const CStockBuyModel& buyModel)
 	float fEvenPrice = stockFees.CalcuEvenPriceByHold(buyModel.stock_type, \
 		fCurrHoldCost, nCurrBuyAmount);
 	
-	/* 2.1 Stock has already existed in stock_hold. Recalculate its values. */
+	/* 2.1 Stock has already existed in stock_hold. Recalculate its values. 
+	 * Update the hold record 
+	 */
 	if (isHoldTableHasSameStock) {
 		float fPreHoldCost = (float)atof((LPCTSTR)holdModel.hold_cost);
 		int nPreHoldAmount = atoi((LPCTSTR)holdModel.hold_amount);
-		nNewHoldAmount = nPreHoldAmount + nCurrBuyAmount;
 
 		/* new hold_amount */
-		holdModel.hold_amount.Format("%d", nNewHoldAmount);
+		nNewHoldAmount = nPreHoldAmount + nCurrBuyAmount;
 
 		/* new hold_cost */
 		fNewHoldCost = (fPreHoldCost * nPreHoldAmount 
@@ -1044,19 +1081,45 @@ CStockRecordDlg::ConvertBuyModelToHoldModel( const CStockBuyModel& buyModel)
 			fNewHoldCost, nNewHoldAmount);
 	} 
 
-	fNewHoldCost = Round(fNewHoldCost, 3);
-	fEvenPrice = Round(fEvenPrice, 3);
 	holdModel.hold_amount.Format("%d", nNewHoldAmount);
 	holdModel.hold_cost.Format("%.3f", fNewHoldCost);
-	holdModel.even_price.Format("%.3f", fEvenPrice);
+	holdModel.even_price.Format("%.2f", fEvenPrice);
 
+	holdModel.SetEncodeStyle(buyModel.GetEncodeStyle()); // for name
 	return holdModel;
 }
 
-// CStockSellModel 
-// CStockRecordDlg::ConvertHoldModelToSellModel( const CStockHoldModel& holdModel)
-// {
-// 	CStockSellModel sellModel;
-// 
-// 	return sellModel;
-// }
+CStockSellModel 
+CStockRecordDlg::ConvertHoldModelToSellModel( const CStockHoldModel& holdModel)
+{
+	CStockSellModel sellModel;
+
+	return sellModel;
+}
+
+void CStockRecordDlg::MakeMenuItemCheckedByActiveTable(void)
+{
+	/* Make all menu items unchecked */
+	GetMenu()->GetSubMenu(0)->CheckMenuItem(ID_MENU_BUY_RECORD, MF_UNCHECKED);
+	GetMenu()->GetSubMenu(0)->CheckMenuItem(ID_MENU_HOLD_RECORD, MF_UNCHECKED);
+	GetMenu()->GetSubMenu(0)->CheckMenuItem(ID_MENU_SELL_RECORD, MF_UNCHECKED);
+	GetMenu()->GetSubMenu(0)->CheckMenuItem(ID_MENU_MONEY_RECORD, MF_UNCHECKED);
+
+	/* Make active table menu itme checked */
+	switch (m_enumRecordTable) {
+	case T_STOCKBUY:
+		GetMenu()->GetSubMenu(0)->CheckMenuItem(ID_MENU_BUY_RECORD, MF_CHECKED);
+		break;
+	case T_STOCKHOLD:
+		GetMenu()->GetSubMenu(0)->CheckMenuItem(ID_MENU_HOLD_RECORD, MF_CHECKED);
+		break;
+	case T_STOCKSELL:
+		GetMenu()->GetSubMenu(0)->CheckMenuItem(ID_MENU_SELL_RECORD, MF_CHECKED);
+		break;
+	case T_STOCKMONEY:
+		GetMenu()->GetSubMenu(0)->CheckMenuItem(ID_MENU_MONEY_RECORD, MF_CHECKED);
+		break;
+	default:
+		break;
+	}
+}
