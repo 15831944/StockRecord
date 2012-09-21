@@ -30,8 +30,10 @@ private:
 	enum EncodeStyle m_encodeStyle;
 
 public:
-	virtual  void SetEncodeStyle(int encodeStyle);
-	virtual  int GetEncodeStyle(void) const;
+	void SetEncodeStyle(int encodeStyle);
+	int  GetEncodeStyle(void) const;
+
+	virtual int ConvertEncodeFormat(int targetEncode);
 
 };
 
@@ -46,15 +48,12 @@ public:
 
 public:
 	int id;
-//	CString code;
-//	CString name;
 	CString buy_price;
 	CString buy_amount;
 	CString buy_date;
 	bool stock_type;
 
 public:
-//	void ConvertEncodeFormat(int targetEncode);
 };
 
 /**
@@ -66,7 +65,6 @@ public:
 	CStockHoldModel(void);
 	~CStockHoldModel(void);
 
-//	void ConvertEncodeFormat(int targetEncode);
 
 public:
 	/**
@@ -75,8 +73,6 @@ public:
 	 * In this case, id is the value of actual record id in database.
 	 */
 	int id;		
-//	CString code;
-//	CString name;
 	CString buy_price;
 	CString hold_cost;
 	CString hold_amount;
@@ -92,17 +88,16 @@ public:
 	CStockSellModel(void);
 	~CStockSellModel(void);
 
-//	void ConvertEncodeFormat(int targetEncode);
 
 public:
 	int id;
-//	CString code;
-//	CString name;
 	CString buy_price;
 	CString sell_price;
 	CString sell_amount;
 	CString sell_date;
+	CString even_price;
 	CString each_earn;
+	CString total_earn;
 };
 
 /**
@@ -126,14 +121,13 @@ int DeleteRecordById(sqlite3* db, const char* tableName, int id);
 int InsertBuyRecord(sqlite3* db, const char* buyTable, const CStockBuyModel& model);
 int InsertHoldRecord(sqlite3* db, const char* strTable, const CStockHoldModel& model);
 int UpdateHoldRecord(sqlite3* db, const char* strTable, const CStockHoldModel& model);
+int InsertSellRecord(sqlite3* db, const char* strTable, const CStockSellModel& model);
+int UpdateSellTotalEarn(sqlite3* db, const char* strTable);
 
 int StockHoldCallback(void* para, int nCol, char** colValue, char** colName);
 CStockHoldModel 
 SelectHoldRecordByCode(sqlite3*db, const char* strTable, const char* code);
 CStockHoldModel
 SelectHoldRecordById(sqlite3*db, const char* strTable, int id);
-
-/* Use Polymorphism of oo */
-int ConvertEncodeFormat(CStockModelBase* pModel, int targetEncode);
 
 #endif

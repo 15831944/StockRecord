@@ -59,8 +59,8 @@ InsertBuyRecord( sqlite3* db, const char* strTable, const CStockBuyModel& model 
 		+ " VALUES( "
 		+ " \"" + (LPCTSTR)model.code + "\", "
 		+ " \"" + (LPCTSTR)model.name + "\", "
-		+  (LPCTSTR)model.buy_price + ", "
-		+  (LPCTSTR)model.buy_amount + ", "
+		+ " \"" + (LPCTSTR)model.buy_price + "\", "
+		+ " \"" + (LPCTSTR)model.buy_amount + "\", "
 		+ "date(\"" + (LPCTSTR)model.buy_date + "\")"
 		+ " ); "
 		+ " END TRANSACTION; ";
@@ -98,10 +98,10 @@ InsertHoldRecord(sqlite3* db, const char* strTable, const CStockHoldModel& model
 		+ " VALUES( "
 		+ " \"" + (LPCTSTR)model.code + "\", "
 		+ " \"" + (LPCTSTR)model.name + "\", "
-		+  (LPCTSTR)model.buy_price + ", "
-		+  (LPCTSTR)model.hold_cost + ", "
-		+  (LPCTSTR)model.hold_amount + ", "
-		+  (LPCTSTR)model.even_price
+		+ " \"" + (LPCTSTR)model.buy_price + "\", "
+		+ " \"" + (LPCTSTR)model.hold_cost + "\", "
+		+ " \"" + (LPCTSTR)model.hold_amount + "\", "
+		+ " \"" + (LPCTSTR)model.even_price + "\" "
 		+ " ); "
 		+ " END TRANSACTION; ";
 
@@ -142,10 +142,10 @@ UpdateHoldRecord( sqlite3* db, const char* strTable, const CStockHoldModel& mode
 		+ " UPDATE " + strTable
 		+ " SET code = " + "\"" + (LPCTSTR)model.code + "\", "
 		+ " name = " + "\"" + (LPCTSTR)model.name + "\", "
-		+ " buy_price = " + (LPCTSTR)model.buy_price + ", "
-		+ " hold_cost = " + (LPCTSTR)model.hold_cost + ", "
-		+ " hold_amount = " + (LPCTSTR)model.hold_amount + ", "
-		+ " even_price = " + (LPCTSTR)model.even_price + 
+		+ " buy_price = " + "\"" + (LPCTSTR)model.buy_price + "\", "
+		+ " hold_cost = " + "\"" + (LPCTSTR)model.hold_cost + "\", "
+		+ " hold_amount = " + "\"" + (LPCTSTR)model.hold_amount + "\", "
+		+ " even_price = " + "\"" + (LPCTSTR)model.even_price + "\" "
 		+ " WHERE id = " + idStr + "; "
 		+ " END TRANSACTION; ";
 	
@@ -261,38 +261,92 @@ CStockHoldModel SelectHoldRecordById( sqlite3*db, const char* strTable, int id )
 	return holdModel;
 }
 
-int ConvertEncodeFormat( CStockModelBase* pModel, int targetEncode )
+int InsertSellRecord( sqlite3* db, const char* strTable, const CStockSellModel& model )
 {
-	if (!pModel || pModel->GetEncodeStyle() == targetEncode)
+	if (!db || !strTable || strlen(strTable) == 0) {
+		AfxMessageBox("Cannot insert record into table");
 		return ERR;
-
-	switch (targetEncode) {
-
-	// TO BE opted. Convert more members.
-	case ENCODE_STYLE_UTF8:
-		pModel->name.Format("%s", 
-			CChineseCodeLib::GB2312ToUTF8((LPCTSTR)pModel->name).c_str());
-		pModel->SetEncodeStyle(ENCODE_STYLE_UTF8);
-		break;
-
-	case ENCODE_STYLE_GB2312:
-		pModel->name.Format("%s", 
-			CChineseCodeLib::UTF8ToGB2312((LPCTSTR)pModel->name).c_str());
-		pModel->SetEncodeStyle(ENCODE_STYLE_GB2312);
-		break;
-
-	default:
-		break;
 	}
 
-	return 0;
+	string sql("");
+	sql = sql
+		+ " BEGIN TRANSACTION; " 
+		+ " INSERT INTO " + strTable
+		+ " (code, name, buy_price, sell_price, sell_amount, "
+		+ " sell_date, even_price, each_earn, total_earn) "
+		+ " VALUES( "
+		+ " \"" + (LPCTSTR)model.code + "\", "
+		+ " \"" + (LPCTSTR)model.name + "\", "
+		+ " \"" + (LPCTSTR)model.buy_price + "\", "
+		+ " \"" + (LPCTSTR)model.sell_price + "\", "
+		+ " \"" + (LPCTSTR)model.sell_amount + "\", "
+		+ " date(\"" + (LPCTSTR)model.sell_date + "\"), "
+		+ " \"" + (LPCTSTR)model.even_price + "\", "
+		+ " \"" + (LPCTSTR)model.each_earn + "\", "
+		+ " \"" + (LPCTSTR)model.total_earn  + "\" "
+		+ " ); "
+		+ " END TRANSACTION; ";
+
+	char* errmsg = NULL;
+	int ret = 0;
+	ret = sqlite3_exec(db, sql.c_str(), NULL, NULL, &errmsg);
+
+	/* Handle error message when error occurs. */
+	if (errmsg) {
+		CString str;
+		str.Format("%s", errmsg);
+		AfxMessageBox(str);
+		sqlite3_free(errmsg);
+		errmsg = NULL;
+		return ret;
+	}
+
+	return ret;
 }
+
+/**
+ *	There MUST be at least one record in stock_sell.
+ *  Only that can you update the total_earn field in the first record.
+ */
+int UpdateSellTotalEarn( sqlite3* db, const char* strTable )
+{
+	if (!db || !strTable || strlen(strTable) == 0) {
+		AfxMessageBox("Cannot insert record into table");
+		return ERR;
+	}
+
+	string sql ("");
+	sql = sql 
+		+ " BEGIN TRANSACTION; " 
+		+ " UPDATE " + strTable
+		+ " SET total_earn = (SELECT SUM(each_earn) FROM " + strTable + ")"
+		+ " WHERE id = (SELECT id FROM " + strTable + " LIMIT 1);"
+		+ " END TRANSACTION; ";
+
+	char* errmsg = NULL;
+	int ret = 0;
+	ret = sqlite3_exec(db, sql.c_str(), NULL, NULL, &errmsg);
+
+	/* Handle error message when error occurs. */
+	if (errmsg) {
+		CString str;
+		str.Format("%s", errmsg);
+		AfxMessageBox(str);
+		sqlite3_free(errmsg);
+		errmsg = NULL;
+		return ret;
+	}
+
+	return ret;
+}
+
+
 /* ===================== Stock sell model =====================  */
 
 CStockModelBase::CStockModelBase(void)
 	: m_encodeStyle(ENCODE_STYLE_GB2312)
-	, name(_T("基类name"))
 	, code(_T("基类code"))
+	, name(_T("基类name"))
 {
 }
 
@@ -334,14 +388,40 @@ int CStockModelBase::GetEncodeStyle( void ) const
 	}
 }
 
+int CStockModelBase::ConvertEncodeFormat( int targetEncode )
+{
+	if (GetEncodeStyle() == targetEncode)
+		return ERR;
+
+	switch (targetEncode) {
+
+	// TO BE opted. Convert more members.
+	case ENCODE_STYLE_UTF8:
+		name.Format("%s", 
+			CChineseCodeLib::GB2312ToUTF8((LPCTSTR)name).c_str());
+		SetEncodeStyle(ENCODE_STYLE_UTF8);
+		break;
+
+	case ENCODE_STYLE_GB2312:
+		name.Format("%s", 
+			CChineseCodeLib::UTF8ToGB2312((LPCTSTR)name).c_str());
+		SetEncodeStyle(ENCODE_STYLE_GB2312);
+		break;
+
+	default:
+		break;
+	}
+
+	return 0;
+}
+
+
 /**
  *	Stock buy model
  */ 
 CStockBuyModel::CStockBuyModel( void )
 	: CStockModelBase()		/* construct your base object firstly */
 	, id(-1)
-//	, code(_T(""))
-//	, name(_T(""))
 	, buy_price(_T(""))
 	, buy_amount(_T(""))
 	, buy_date(_T(""))
@@ -353,39 +433,12 @@ CStockBuyModel::~CStockBuyModel( void )
 {
 }
 
-// void CStockBuyModel::ConvertEncodeFormat( int targetEncode )
-// {
-// 	if (GetEncodeStyle() == targetEncode)
-// 		return ;
-// 
-// 	switch (targetEncode) {
-// 
-// 	// TO BE opted. Convert more members.
-// 	case ENCODE_STYLE_UTF8:
-// 		this->name.Format("%s", 
-// 			CChineseCodeLib::GB2312ToUTF8((LPCTSTR)this->name).c_str());
-// 		SetEncodeStyle(ENCODE_STYLE_UTF8);
-// 		break;
-// 
-// 	case ENCODE_STYLE_GB2312:
-// 		this->name.Format("%s", 
-// 			CChineseCodeLib::UTF8ToGB2312((LPCTSTR)this->name).c_str());
-// 		SetEncodeStyle(ENCODE_STYLE_GB2312);
-// 		break;
-// 
-// 	default:
-// 		break;
-// 	}
-// }
-
 /**
  *	=====================  Stock hold model ===================== 
  */ 
 CStockHoldModel::CStockHoldModel( void )
 	: CStockModelBase()
 	, id(-1)
-//	, code(_T(""))
-//	, name(_T(""))
 	, buy_price(_T(""))
 	, hold_cost(_T(""))
 	, hold_amount(_T(""))
@@ -397,43 +450,18 @@ CStockHoldModel::~CStockHoldModel( void )
 {
 }
 
-// void CStockHoldModel::ConvertEncodeFormat( int targetEncode )
-// {
-// 	if (GetEncodeStyle() == targetEncode)
-// 		return ;
-// 
-// 	switch (targetEncode) {
-// 
-// 	// TO BE opted. Convert more members.
-// 	case ENCODE_STYLE_UTF8:
-// 		this->name.Format("%s", 
-// 			CChineseCodeLib::GB2312ToUTF8((LPCTSTR)this->name).c_str());
-// 		SetEncodeStyle(ENCODE_STYLE_UTF8);
-// 		break;
-// 
-// 	case ENCODE_STYLE_GB2312:
-// 		this->name.Format("%s", 
-// 			CChineseCodeLib::UTF8ToGB2312((LPCTSTR)this->name).c_str());
-// 		SetEncodeStyle(ENCODE_STYLE_GB2312);
-// 		break;
-// 
-// 	default:
-// 		break;
-// 	}
-// }
-
 /* ========== Stock Sell Model ============ */
 
 CStockSellModel::CStockSellModel( void )
 	: CStockModelBase()
-	, id(0)
-//	, code(_T(""))
-//	, name(_T(""))
+	, id(-1)
 	, buy_price(_T(""))
 	, sell_price(_T(""))
 	, sell_amount(_T(""))
 	, sell_date(_T(""))
+	, even_price(_T(""))
 	, each_earn(_T(""))
+	, total_earn(_T(""))
 {
 
 }
@@ -441,28 +469,3 @@ CStockSellModel::CStockSellModel( void )
 CStockSellModel::~CStockSellModel( void )
 {
 }
-
-// void CStockSellModel::ConvertEncodeFormat( int targetEncode )
-// {
-// 	if (GetEncodeStyle() == targetEncode)
-// 		return ;
-// 
-// 	switch (targetEncode) {
-// 
-// 		// TO BE opted. Convert more members.
-// 	case ENCODE_STYLE_UTF8:
-// 		this->name.Format("%s", 
-// 			CChineseCodeLib::GB2312ToUTF8((LPCTSTR)this->name).c_str());
-// 		SetEncodeStyle(ENCODE_STYLE_UTF8);
-// 		break;
-// 
-// 	case ENCODE_STYLE_GB2312:
-// 		this->name.Format("%s", 
-// 			CChineseCodeLib::UTF8ToGB2312((LPCTSTR)this->name).c_str());
-// 		SetEncodeStyle(ENCODE_STYLE_GB2312);
-// 		break;
-// 
-// 	default:
-// 		break;
-// 	}
-// }

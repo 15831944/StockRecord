@@ -7570,3 +7570,16 @@ void CGridCtrl::Reorder(int From, int To)
 	m_arRowOrder.insert(m_arRowOrder.begin()+To+Offset, Value);
 
 }
+
+/**
+ *	Set Non fixed row color, also pass the fixed cells in the row.
+ */
+void CGridCtrl::SetNonFixedRowBkColor(int rowIdx, COLORREF clr )
+{
+	if (rowIdx > GetRowCount())
+		return;
+
+	for (int colIdx = GetFixedColumnCount(); colIdx < GetColumnCount(); ++colIdx) {
+		SetItemBkColour(rowIdx, colIdx, clr);
+	}
+}

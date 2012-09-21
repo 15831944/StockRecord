@@ -31,6 +31,12 @@
     <Filter Include="源文件\Dialogs_Srcs">
       <UniqueIdentifier>{4590e7a9-b316-4f29-9fc3-396e5f19f62a}</UniqueIdentifier>
     </Filter>
+    <Filter Include="头文件\Utility_Headers">
+      <UniqueIdentifier>{691af4d8-148d-4aae-999a-bdfbf66f6c81}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="源文件\Utility_Srcs">
+      <UniqueIdentifier>{68e324cc-236b-49a6-965f-b53bcd78212b}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="ReadMe.txt" />
@@ -99,12 +105,6 @@
     <ClInclude Include="ErrorCode.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="ChineseCodeLib.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="FieldNamesMap.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
     <ClInclude Include="StockModel.h">
       <Filter>头文件</Filter>
     </ClInclude>
@@ -116,6 +116,12 @@
     </ClInclude>
     <ClInclude Include="StockSellDlg.h">
       <Filter>头文件\Dialogs_Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="ChineseCodeLib.h">
+      <Filter>头文件\Utility_Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="FieldNamesMap.h">
+      <Filter>头文件\Utility_Headers</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -161,12 +167,6 @@
     <ClCompile Include="NewCellTypes\GridURLCell.cpp">
       <Filter>源文件\New Cell Srcs</Filter>
     </ClCompile>
-    <ClCompile Include="ChineseCodeLib.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="FieldNamesMap.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
     <ClCompile Include="StockModel.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
@@ -178,6 +178,12 @@
     </ClCompile>
     <ClCompile Include="StockSellDlg.cpp">
       <Filter>源文件\Dialogs_Srcs</Filter>
+    </ClCompile>
+    <ClCompile Include="ChineseCodeLib.cpp">
+      <Filter>源文件\Utility_Srcs</Filter>
+    </ClCompile>
+    <ClCompile Include="FieldNamesMap.cpp">
+      <Filter>源文件\Utility_Srcs</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

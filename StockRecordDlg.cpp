@@ -80,6 +80,7 @@ BEGIN_MESSAGE_MAP(CStockRecordDlg, CDialogEx)
 	ON_COMMAND(ID_MENU_MONEY_RECORD, &CStockRecordDlg::OnMenuMoneyRecord)
 	ON_BN_CLICKED(IDC_BT_EXIT, &CStockRecordDlg::OnBnClickedExit)
 	ON_NOTIFY(NM_RCLICK, IDC_GRID, &CStockRecordDlg::OnGridRClick)
+	ON_NOTIFY(NM_DBLCLK, IDC_GRID, &CStockRecordDlg::OnGridDBClick)
 	ON_COMMAND_RANGE(IDM_STOCKBUY_REMOVE, IDM_STOCKMONEY_REMOVE, &CStockRecordDlg::OnMenuRemoveRecord)
 	ON_COMMAND(IDM_STOCKBUY_ADD, &CStockRecordDlg::OnStockbuyAdd)
 	ON_COMMAND(IDM_STOCKHOLD_PLAN_SELL, &CStockRecordDlg::OnStockholdPlanSell)
@@ -123,7 +124,8 @@ BOOL CStockRecordDlg::OnInitDialog()
 	OpenDatabase();
 
 	/* Some features of grid's column and row. */
-	m_GridCtrl.SetFixedBkColor(RGB(0xFF, 0xFF, 0x00));
+	m_GridCtrl.SetFixedBkColor(RGB(0xCD, 0xEE, 0xB7));
+	m_GridCtrl.SetGridLineColor(RGB(0xFC, 0xD7, 0x4F));
 	m_GridCtrl.SetColumnResize(TRUE);		// Column can resize.
 	m_GridCtrl.SetRowResize(TRUE);			// Row cannot resize.
 	m_GridCtrl.SetAutoSizeStyle(GVS_BOTH);	// Auto size
@@ -338,6 +340,8 @@ int CStockRecordDlg::SetGirdData( int nRowCount, int nColCount, char** result )
 	 */
 	int seqNo = 1;					// sqe_no is started from 1.
 	for (int rowIdx = 1; rowIdx < nRowCount + 1; ++rowIdx) {
+		if (rowIdx % 2 == 0)	// Set row background color.
+			m_GridCtrl.SetNonFixedRowBkColor(rowIdx, RGB(0xBC, 0xC7, 0xD8));
 		for (int colIdx = 0; colIdx < nColCount; ++colIdx) {
 
 			/* 2.1 Display 'seqNo' in col 0, instead of 'id'. */
@@ -667,6 +671,7 @@ BOOL CStockRecordDlg::IsTableNamesValid( void )
 void CStockRecordDlg::OnMenuHoldRecord()
 {
 	m_enumRecordTable = T_STOCKHOLD;
+	SetWindowText("Hold Record");
 	MakeMenuItemCheckedByActiveTable();		
 	QueryRecordsByTableName(m_StrHoldTableName.c_str());
 }
@@ -674,6 +679,7 @@ void CStockRecordDlg::OnMenuHoldRecord()
 void CStockRecordDlg::OnMenuBuyRecord()
 {
 	m_enumRecordTable = T_STOCKBUY;
+	SetWindowText("Buy Record");
 	MakeMenuItemCheckedByActiveTable();
 	QueryRecordsByTableName(m_strBuyTableName.c_str());
 }
@@ -681,6 +687,7 @@ void CStockRecordDlg::OnMenuBuyRecord()
 void CStockRecordDlg::OnMenuSellRecord()
 {
 	m_enumRecordTable = T_STOCKSELL;
+	SetWindowText("Sell Record");
 	MakeMenuItemCheckedByActiveTable();
 	QueryRecordsByTableName(m_strSellTableName.c_str());
 }
@@ -688,6 +695,7 @@ void CStockRecordDlg::OnMenuSellRecord()
 void CStockRecordDlg::OnMenuMoneyRecord()
 {
 	m_enumRecordTable = T_STOCKMONEY;
+	SetWindowText("Money Record");
 	MakeMenuItemCheckedByActiveTable();
 	QueryRecordsByTableName(m_strMoneyTableName.c_str());
 }
@@ -745,6 +753,23 @@ void CStockRecordDlg::OnGridRClick( NMHDR *pNotifyStruct, LRESULT* pResult )
 
 	menu.DestroyMenu();
 	*pResult = 0;
+}
+
+/**
+ *	If stock_hold is active, then the double click will trigger the sell operation.
+ */
+void CStockRecordDlg::OnGridDBClick( NMHDR *pNotifyStruct, LRESULT* pResult )
+{
+	NM_GRIDVIEW* pItem = (NM_GRIDVIEW*) pNotifyStruct;
+
+	/* DO NOT popup sell dialog on fixed column or row */
+	if (m_GridCtrl.IsCellFixed(pItem->iRow, pItem->iColumn)) {
+		*pResult = 1;
+		return;
+	}
+
+	if (m_enumRecordTable == T_STOCKHOLD)
+		OnStockholdSell();
 }
 
 /**
@@ -943,8 +968,7 @@ void CStockRecordDlg::OnStockbuyAdd()
 
 	/* 2. Insert record into stock_buy table */
 	if (buyModel.GetEncodeStyle() == ENCODE_STYLE_GB2312)
-		// buyModel.ConvertEncodeFormat(ENCODE_STYLE_UTF8);
-		::ConvertEncodeFormat(&buyModel, ENCODE_STYLE_UTF8);
+		buyModel.ConvertEncodeFormat(ENCODE_STYLE_UTF8);
 	ret = InsertBuyRecord(m_pDatabase, m_strBuyTableName.c_str(), buyModel);
 
 	/* 3. Convert buy model into hold model to prepare to insert. */
@@ -952,7 +976,7 @@ void CStockRecordDlg::OnStockbuyAdd()
 
 	/* 4. Insert record into stock_hold table. */
 	if (holdModel.GetEncodeStyle() == ENCODE_STYLE_GB2312)
-		::ConvertEncodeFormat(&holdModel, ENCODE_STYLE_UTF8);
+		holdModel.ConvertEncodeFormat(ENCODE_STYLE_UTF8);
 
 	if (holdModel.id < 0) /* No same record in stock_hold, insert a new one */
 		ret = InsertHoldRecord(m_pDatabase, m_StrHoldTableName.c_str(), holdModel);
@@ -978,17 +1002,6 @@ void CStockRecordDlg::OnStockholdSell()
 		return ;
 	}
 
-	// TODO: sell hold record.
-	/**
-	 *	1. Query the hold record according to the focused cell's row.
-	 *  2. Push code, name... to sell dialog.
-	 *  3. When IDOK, get the amount to sell.
-	 *     Compare sellAmount with holdModel's hold_amount.
-	 *  4. Calculate each_earn
-	 *  5. Convert to sellModel, and insert it to stock_sell.
-	 *  6. Get the total_earn and update the first record.
-	 */
-
 	/* 1. Query the hold record according to the focused cell's row. */
 	int id = GetActiveRecordIdBySeqNo(m_GridCtrl.GetFocusCell().row);
 	CStockHoldModel holdModel = SelectHoldRecordById(m_pDatabase,	\
@@ -996,40 +1009,53 @@ void CStockRecordDlg::OnStockholdSell()
 
 	/* 2. Popup sell stock dialog with appropriate values. */
 	if (holdModel.GetEncodeStyle() == ENCODE_STYLE_UTF8)
-		::ConvertEncodeFormat(&holdModel, ENCODE_STYLE_GB2312);
+		holdModel.ConvertEncodeFormat(ENCODE_STYLE_GB2312);
 	int nHoldAmount = atoi((LPCTSTR)holdModel.hold_amount);
+	float fHoldCost = (float)atof((LPCTSTR)holdModel.hold_cost);
 
 	CStockSellDlg sellDlg;
 	sellDlg.m_strCode = holdModel.code;	// init dialog's edit values.
 	sellDlg.m_strName = holdModel.name;
 	sellDlg.m_nSellAmount = nHoldAmount;
 	sellDlg.SetHoldAmount(nHoldAmount);
-	sellDlg.SetHoldModel(&holdModel);
+	sellDlg.SetHoldCost(fHoldCost);
 	
 	if (sellDlg.DoModal() != IDOK)
 		return ;
 
-	/* 3. Calculate each earn according to input from dialog. */
-	bool bStockType = ('6' == holdModel.code.GetAt(0)) ?	\
-		STOCK_TYPE_SHANG_HAI : STOCK_TYPE_SHEN_ZHEN;
-	int nSellAmount = sellDlg.m_nSellAmount;
-	float fSellPrice = sellDlg.m_fSellPrice;
-	float fHoldCost = (float)atof((LPCTSTR)holdModel.hold_cost);
-	CStockFees stockFees;
-	float fEachEarn = stockFees.CalcuEachEarn(bStockType,	\
-		Round(fHoldCost, 2), nSellAmount, fSellPrice);
+	/* 3. Convert to StockSellModel , insert record into table stock_sell,
+	 * and Update total_earn (+= each_earn) on the first record in stock_sell */
+	CStockSellModel sellModel = ConvertToSellModel(holdModel, sellDlg);
+	if (sellModel.GetEncodeStyle() == ENCODE_STYLE_GB2312)
+		sellModel.ConvertEncodeFormat(ENCODE_STYLE_UTF8);
+	int ret = InsertSellRecord(m_pDatabase, m_strSellTableName.c_str(), sellModel);
+	ret = UpdateSellTotalEarn(m_pDatabase, m_strSellTableName.c_str());
 
-	/* 4. */
-
-	/* 3. Get sell amount & sell price from dialog */
+	/* 4.1 If all of held stock is sold, delete record in stock_hold. 
+	 * Comment this, because we don't delete the record now. */
 	if (sellDlg.m_nSellAmount == nHoldAmount) {
-		/* Sell all of held stock, remove record in stock_hold */
-
-	} else if (sellDlg.m_nSellAmount == nHoldAmount) {
-		/* Sell part of held stock, update record in stock_hold */
+		// ret = DeleteRecordById(m_pDatabase, m_StrHoldTableName.c_str(), id);
 	}
 
+	/* 4.2 If part of held stock is sold, update record in stock_hold. */
+	else if (sellDlg.m_nSellAmount < nHoldAmount) {
+		int remianAmount = nHoldAmount - sellDlg.m_nSellAmount;
+		bool bStockType = ('6' == holdModel.code.GetAt(0)) ?	\
+			STOCK_TYPE_SHANG_HAI : STOCK_TYPE_SHEN_ZHEN;
 
+		CStockFees stockFees;
+		float fNewRemainEvenPrice = 
+			stockFees.CalcuEvenPriceByHold(bStockType, fHoldCost, remianAmount);
+		
+		holdModel.hold_amount.Format("%d", remianAmount);
+		holdModel.even_price.Format("%.2f", Round(fNewRemainEvenPrice, 2));
+
+		if (holdModel.GetEncodeStyle() == ENCODE_STYLE_GB2312)
+			holdModel.ConvertEncodeFormat(ENCODE_STYLE_UTF8);
+		ret = UpdateHoldRecord(m_pDatabase, m_StrHoldTableName.c_str(), holdModel);
+	}
+
+	ReloadRecords();
 }
 
 void CStockRecordDlg::OnStockmoneyInout()
@@ -1038,6 +1064,18 @@ void CStockRecordDlg::OnStockmoneyInout()
 		MessageBox("Database is not opened.", "Oops.");
 		return ;
 	}
+}
+
+
+CString CStockRecordDlg::ConvertOleDateTimeToDateStr( const COleDateTime& datetime )
+{
+	/* Make sure the date format is: YYYY-MM-DD. */
+	int year = datetime.GetYear();
+	int month = datetime.GetMonth();
+	int day = datetime.GetDay();
+	CString dateStr("");
+	dateStr.Format("%04d-%02d-%02d", year, month, day);
+	return dateStr;
 }
 
 CStockBuyModel 
@@ -1050,13 +1088,7 @@ CStockRecordDlg::ConvertDlgDataToBuyModel( const CStockBuyDlg& buyDlg )
 	buyModel.buy_price.Format("%.2f", buyDlg.m_fBuyPrice);
 	buyModel.buy_amount.Format("%d", buyDlg.m_nBuyAmount);
 	buyModel.stock_type = buyDlg.m_bStockType;
-
-	/* Make sure the date format is: YYYY-MM-DD. */
-	int year	= buyDlg.m_oleDataTime.GetYear();
-	int month	= buyDlg.m_oleDataTime.GetMonth();
-	int day		= buyDlg.m_oleDataTime.GetDay();
-	buyModel.buy_date.Format("%04d-%02d-%02d", year, month, day);
-
+	buyModel.buy_date = ConvertOleDateTimeToDateStr(buyDlg.m_oleDataTime);
 	buyModel.SetEncodeStyle(ENCODE_STYLE_GB2312);
 
 	return buyModel;
@@ -1126,13 +1158,34 @@ CStockRecordDlg::ConvertBuyModelToHoldModel( const CStockBuyModel& buyModel)
 	return holdModel;
 }
 
+/* Convert sellDlg data & holdModel data to sellModel data to be inserted. */
 CStockSellModel 
-CStockRecordDlg::ConvertHoldModelToSellModel( const CStockHoldModel& holdModel)
+CStockRecordDlg::ConvertToSellModel( const CStockHoldModel& holdModel, 
+		const CStockSellDlg& sellDlg )
 {
 	CStockSellModel sellModel;
+	sellModel.code = holdModel.code;
+	sellModel.name = holdModel.name;
+	sellModel.buy_price = holdModel.buy_price;
+	sellModel.even_price = holdModel.even_price;
+	sellModel.sell_price.Format("%.2f", sellDlg.m_fSellPrice);
+	sellModel.sell_amount.Format("%d", sellDlg.m_nSellAmount);
+	sellModel.sell_date = ConvertOleDateTimeToDateStr(sellDlg.m_oleSellDate);
 
+	/* Calculate each earn according to input from dialog. */
+	bool bStockType = ('6' == holdModel.code.GetAt(0)) ?	\
+		STOCK_TYPE_SHANG_HAI : STOCK_TYPE_SHEN_ZHEN;
+	float fHoldCost = (float)atof((LPCTSTR)holdModel.hold_cost);
+	CStockFees stockFees;
+	float fEachEarn = stockFees.CalcuEachEarn(bStockType, /*Round(fHoldCost, 2)*/\
+		fHoldCost , sellDlg.m_nSellAmount, sellDlg.m_fSellPrice);
+
+	sellModel.each_earn.Format("%.2f", Round(fEachEarn, 2, ROUND_ZSBR));
+	sellModel.SetEncodeStyle(holdModel.GetEncodeStyle());
+	
 	return sellModel;
 }
+
 
 void CStockRecordDlg::MakeMenuItemCheckedByActiveTable(void)
 {

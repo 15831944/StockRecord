@@ -1,8 +1,6 @@
 #pragma once
 #include "atlcomtime.h"
-
-#include "StockModel.h"
-
+#include "afxwin.h"
 
 // CStockSellDlg 对话框
 
@@ -19,10 +17,13 @@ public:
 
 protected:
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV 支持
-
+	virtual BOOL OnInitDialog();
+	afx_msg void OnShowWindow(BOOL bShow, UINT nStatus);
 	afx_msg void OnBnClickedOk();
 	afx_msg void OnBnClickedBtCalcuEarn();
 	afx_msg void OnBnClickedCancel();
+	afx_msg void OnSelchangeComboEarn();
+	afx_msg void OnSelchangeComboLoss();
 	DECLARE_MESSAGE_MAP()
 
 public:
@@ -30,9 +31,19 @@ public:
 	CString m_strName;
 	int m_nSellAmount;
 	float m_fSellPrice;
-	float m_fEachEarn;
-	COleDateTime m_fSellDate;
+	COleDateTime m_oleSellDate;
 
+private:
+	float m_fEachEarn;
+
+	CString m_strEachEarn;
+	CComboBox m_comboEarn;
+	CString m_strEarnPrice;
+	CComboBox m_comboLoss;
+	CString m_strLossPrice;
+public:
+	float GetThresholdPriceFromCString(CString str);
+	
 private:
 	/**
 	 *	m_nHoldAmount is assigned from HoldModel.
@@ -41,14 +52,11 @@ private:
 	int m_nHoldAmount;
 
 	/**
-	 *	Pointer point to stockHoldModel object.
-	 *  Used for calculate even price with object's hold_cost.
+	 *	Assigned from holdModel, used when calculate each_earn and threshold_price.
 	 */
-	CStockHoldModel* m_pHoldModel;
+	float m_fHoldCost;
 
 public:
-	void SetHoldAmount(int holdAmount);
-	void SetHoldModel(CStockHoldModel* pHoldModel);
-
-	virtual BOOL OnInitDialog();
+	void SetHoldAmount(int holdAmount)	{m_nHoldAmount = holdAmount;}
+	void SetHoldCost(float fHoldCost)	{m_fHoldCost = fHoldCost;}
 };

@@ -54,6 +54,7 @@ protected:
 	afx_msg void OnMenuMoneyRecord();
 	afx_msg void OnBnClickedExit();
 	afx_msg void OnGridRClick(NMHDR *pNotifyStruct, LRESULT* pResult);
+	afx_msg void OnGridDBClick(NMHDR *pNotifyStruct, LRESULT* pResult);
 	afx_msg void OnMenuRemoveRecord(UINT uid);
 	afx_msg void OnStockbuyAdd();
 	afx_msg void OnStockholdPlanSell();
@@ -76,10 +77,13 @@ private:
 	BOOL IsFocusedCellInSelectedRows(
 		const CCellID& focusedCell, const CCellRange& cellRange);
 
+	CString ConvertOleDateTimeToDateStr(const COleDateTime& datetime);
+
 	/* Return a real model, not model's reference. */
 	CStockBuyModel	 ConvertDlgDataToBuyModel(const CStockBuyDlg& buyDlg);
 	CStockHoldModel  ConvertBuyModelToHoldModel(const CStockBuyModel&);
-	CStockSellModel  ConvertHoldModelToSellModel(const CStockHoldModel&);
+	CStockSellModel  
+	ConvertToSellModel(const CStockHoldModel&holdModel, const CStockSellDlg& sellDlg);
 	CStockMoneyModel ConvertDlgDataToMoneyModel();
 
 public:
