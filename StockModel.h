@@ -22,6 +22,10 @@ public:
 	CStockModelBase(void);
 	~CStockModelBase(void);
 
+public:
+	CString code;
+	CString name;
+
 private:
 	enum EncodeStyle m_encodeStyle;
 
@@ -42,15 +46,15 @@ public:
 
 public:
 	int id;
-	CString code;
-	CString name;
+//	CString code;
+//	CString name;
 	CString buy_price;
 	CString buy_amount;
 	CString buy_date;
 	bool stock_type;
 
 public:
-	void ConvertEncodeFormat(int targetEncode);
+//	void ConvertEncodeFormat(int targetEncode);
 };
 
 /**
@@ -62,7 +66,7 @@ public:
 	CStockHoldModel(void);
 	~CStockHoldModel(void);
 
-	void ConvertEncodeFormat(int targetEncode);
+//	void ConvertEncodeFormat(int targetEncode);
 
 public:
 	/**
@@ -71,8 +75,8 @@ public:
 	 * In this case, id is the value of actual record id in database.
 	 */
 	int id;		
-	CString code;
-	CString name;
+//	CString code;
+//	CString name;
 	CString buy_price;
 	CString hold_cost;
 	CString hold_amount;
@@ -82,9 +86,23 @@ public:
 /**
  *	Stock sell record model.
  */
-class CStockSellModel
+class CStockSellModel : public CStockModelBase
 {
+public:
+	CStockSellModel(void);
+	~CStockSellModel(void);
 
+//	void ConvertEncodeFormat(int targetEncode);
+
+public:
+	int id;
+//	CString code;
+//	CString name;
+	CString buy_price;
+	CString sell_price;
+	CString sell_amount;
+	CString sell_date;
+	CString each_earn;
 };
 
 /**
@@ -114,5 +132,8 @@ CStockHoldModel
 SelectHoldRecordByCode(sqlite3*db, const char* strTable, const char* code);
 CStockHoldModel
 SelectHoldRecordById(sqlite3*db, const char* strTable, int id);
+
+/* Use Polymorphism of oo */
+int ConvertEncodeFormat(CStockModelBase* pModel, int targetEncode);
 
 #endif

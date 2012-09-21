@@ -1,6 +1,8 @@
 #pragma once
 #include "atlcomtime.h"
 
+#include "StockModel.h"
+
 
 // CStockSellDlg ¶Ô»°¿ò
 
@@ -31,14 +33,22 @@ public:
 	float m_fEachEarn;
 	COleDateTime m_fSellDate;
 
+private:
 	/**
 	 *	m_nHoldAmount is assigned from HoldModel.
 	 *  The m_nSellAmount must be not greater than m_nHoldAmount.
 	 */
 	int m_nHoldAmount;
 
+	/**
+	 *	Pointer point to stockHoldModel object.
+	 *  Used for calculate even price with object's hold_cost.
+	 */
+	CStockHoldModel* m_pHoldModel;
+
 public:
 	void SetHoldAmount(int holdAmount);
+	void SetHoldModel(CStockHoldModel* pHoldModel);
 
 	virtual BOOL OnInitDialog();
 };

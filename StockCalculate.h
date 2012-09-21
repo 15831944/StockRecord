@@ -34,6 +34,9 @@ public:
 public:
 	float CalculateHoldCostByBuy(bool bStockType, float fBuyPrice, int nBuyAmount);
 	float CalcuEvenPriceByHold(bool bStockType, float fHoldCost, int nHoldAmount);
+
+	float 
+	CalcuEachEarn(bool bStockType, float fHoldCost, int nSellAmount, float fSellPrice);
 };
 
 

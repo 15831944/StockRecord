@@ -69,6 +69,26 @@ CStockFees::CalcuEvenPriceByHold( bool bStockType, float fHoldCost, int nHoldAmo
 	return m_fEvenPrice;
 }
 
+float CStockFees::CalcuEachEarn( bool bStockType, float fHoldCost, int nSellAmount, float fSellPrice )
+{
+	float fSellStampTaxMoney = 
+		Round(fSellPrice * nSellAmount * m_fStampTaxRate, 2);
+	float fSellCommiMoney = 
+		Round(fSellPrice * nSellAmount * m_fCommisionRate, 2);
+	if (fSellCommiMoney < 5.0f)
+		fSellCommiMoney = 5.0f;
+	float fSellTransferMoney = 0.0f;
+	if (bStockType == STOCK_TYPE_SHANG_HAI) {
+		fSellTransferMoney = Round(nSellAmount * m_fTransferRate, 2);
+		if (fSellTransferMoney < 1.0f)
+			fSellTransferMoney = 1.0f;
+	}
+	float fEachEarn = Round((fSellPrice - fHoldCost) * nSellAmount, 2, ROUND_ZSBR)	\
+		- fSellCommiMoney - fSellStampTaxMoney - fSellTransferMoney;
+
+	return fEachEarn;
+}
+
 float Round( float fValue, int precision, int roundway /*= ROUND_ZRBS*/ )
 {
 	switch (roundway) {

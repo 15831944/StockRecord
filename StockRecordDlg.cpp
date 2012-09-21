@@ -943,7 +943,8 @@ void CStockRecordDlg::OnStockbuyAdd()
 
 	/* 2. Insert record into stock_buy table */
 	if (buyModel.GetEncodeStyle() == ENCODE_STYLE_GB2312)
-		buyModel.ConvertEncodeFormat(ENCODE_STYLE_UTF8);
+		// buyModel.ConvertEncodeFormat(ENCODE_STYLE_UTF8);
+		::ConvertEncodeFormat(&buyModel, ENCODE_STYLE_UTF8);
 	ret = InsertBuyRecord(m_pDatabase, m_strBuyTableName.c_str(), buyModel);
 
 	/* 3. Convert buy model into hold model to prepare to insert. */
@@ -951,7 +952,7 @@ void CStockRecordDlg::OnStockbuyAdd()
 
 	/* 4. Insert record into stock_hold table. */
 	if (holdModel.GetEncodeStyle() == ENCODE_STYLE_GB2312)
-		holdModel.ConvertEncodeFormat(ENCODE_STYLE_UTF8);
+		::ConvertEncodeFormat(&holdModel, ENCODE_STYLE_UTF8);
 
 	if (holdModel.id < 0) /* No same record in stock_hold, insert a new one */
 		ret = InsertHoldRecord(m_pDatabase, m_StrHoldTableName.c_str(), holdModel);
@@ -995,7 +996,7 @@ void CStockRecordDlg::OnStockholdSell()
 
 	/* 2. Popup sell stock dialog with appropriate values. */
 	if (holdModel.GetEncodeStyle() == ENCODE_STYLE_UTF8)
-		holdModel.ConvertEncodeFormat(ENCODE_STYLE_GB2312);
+		::ConvertEncodeFormat(&holdModel, ENCODE_STYLE_GB2312);
 	int nHoldAmount = atoi((LPCTSTR)holdModel.hold_amount);
 
 	CStockSellDlg sellDlg;
@@ -1003,9 +1004,22 @@ void CStockRecordDlg::OnStockholdSell()
 	sellDlg.m_strName = holdModel.name;
 	sellDlg.m_nSellAmount = nHoldAmount;
 	sellDlg.SetHoldAmount(nHoldAmount);
+	sellDlg.SetHoldModel(&holdModel);
 	
 	if (sellDlg.DoModal() != IDOK)
 		return ;
+
+	/* 3. Calculate each earn according to input from dialog. */
+	bool bStockType = ('6' == holdModel.code.GetAt(0)) ?	\
+		STOCK_TYPE_SHANG_HAI : STOCK_TYPE_SHEN_ZHEN;
+	int nSellAmount = sellDlg.m_nSellAmount;
+	float fSellPrice = sellDlg.m_fSellPrice;
+	float fHoldCost = (float)atof((LPCTSTR)holdModel.hold_cost);
+	CStockFees stockFees;
+	float fEachEarn = stockFees.CalcuEachEarn(bStockType,	\
+		Round(fHoldCost, 2), nSellAmount, fSellPrice);
+
+	/* 4. */
 
 	/* 3. Get sell amount & sell price from dialog */
 	if (sellDlg.m_nSellAmount == nHoldAmount) {

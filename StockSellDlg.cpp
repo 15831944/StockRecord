@@ -20,6 +20,7 @@ CStockSellDlg::CStockSellDlg(CWnd* pParent /*=NULL*/)
 	, m_fEachEarn(0)
 	, m_fSellDate(COleDateTime::GetCurrentTime())
 	, m_nHoldAmount(0)
+	, m_pHoldModel(NULL)
 {
 }
 
@@ -36,7 +37,7 @@ void CStockSellDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Text(pDX, IDC_EDIT_SELL_AMOUNT, m_nSellAmount);
 	DDV_MinMaxInt(pDX, m_nSellAmount, 1, 10000000);
 	DDX_Text(pDX, IDC_EDIT_SELL_PRICE, m_fSellPrice);
-	DDV_MinMaxFloat(pDX, m_fSellPrice, 0.01, 100000.0);
+	DDV_MinMaxFloat(pDX, m_fSellPrice, 0.01f, 100000.0f);
 	DDX_Text(pDX, IDC_EDIT_EACH_EARN, m_fEachEarn);
 	DDX_DateTimeCtrl(pDX, IDC_SELL_DATE, m_fSellDate);
 }
@@ -71,6 +72,14 @@ void CStockSellDlg::OnBnClickedOk()
 
 void CStockSellDlg::OnBnClickedBtCalcuEarn()
 {
+	if (!m_pHoldModel) {
+		MessageBox("无法得到持仓成本。", "Oops");
+		return ;
+	}
+
+	// TODO: Calculate earn with holdModel's hold_cost value.
+
+
 }
 
 void CStockSellDlg::OnBnClickedCancel()
@@ -81,6 +90,11 @@ void CStockSellDlg::OnBnClickedCancel()
 void CStockSellDlg::SetHoldAmount( int holdAmount )
 {
 	m_nHoldAmount = holdAmount;
+}
+
+void CStockSellDlg::SetHoldModel( CStockHoldModel* pHoldModel )
+{
+	this->m_pHoldModel = pHoldModel;
 }
 
 BOOL CStockSellDlg::OnInitDialog()

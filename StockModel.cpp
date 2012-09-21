@@ -261,10 +261,38 @@ CStockHoldModel SelectHoldRecordById( sqlite3*db, const char* strTable, int id )
 	return holdModel;
 }
 
+int ConvertEncodeFormat( CStockModelBase* pModel, int targetEncode )
+{
+	if (!pModel || pModel->GetEncodeStyle() == targetEncode)
+		return ERR;
+
+	switch (targetEncode) {
+
+	// TO BE opted. Convert more members.
+	case ENCODE_STYLE_UTF8:
+		pModel->name.Format("%s", 
+			CChineseCodeLib::GB2312ToUTF8((LPCTSTR)pModel->name).c_str());
+		pModel->SetEncodeStyle(ENCODE_STYLE_UTF8);
+		break;
+
+	case ENCODE_STYLE_GB2312:
+		pModel->name.Format("%s", 
+			CChineseCodeLib::UTF8ToGB2312((LPCTSTR)pModel->name).c_str());
+		pModel->SetEncodeStyle(ENCODE_STYLE_GB2312);
+		break;
+
+	default:
+		break;
+	}
+
+	return 0;
+}
 /* ===================== Stock sell model =====================  */
 
 CStockModelBase::CStockModelBase(void)
 	: m_encodeStyle(ENCODE_STYLE_GB2312)
+	, name(_T("基类name"))
+	, code(_T("基类code"))
 {
 }
 
@@ -312,8 +340,8 @@ int CStockModelBase::GetEncodeStyle( void ) const
 CStockBuyModel::CStockBuyModel( void )
 	: CStockModelBase()		/* construct your base object firstly */
 	, id(-1)
-	, code(_T(""))
-	, name(_T(""))
+//	, code(_T(""))
+//	, name(_T(""))
 	, buy_price(_T(""))
 	, buy_amount(_T(""))
 	, buy_date(_T(""))
@@ -321,40 +349,34 @@ CStockBuyModel::CStockBuyModel( void )
 {
 }
 
-// CStockBuyModel::CStockBuyModel( const CStockBuyModel& model)
-// 	: CStockModelBase(model)/* Call copy constructor in base class. */
-// {
-// 	*this = model;			// will call operator=()
-// }
-
 CStockBuyModel::~CStockBuyModel( void )
 {
 }
 
-void CStockBuyModel::ConvertEncodeFormat( int targetEncode )
-{
-	if (GetEncodeStyle() == targetEncode)
-		return ;
-
-	switch (targetEncode) {
-
-	// TO BE opted. Convert more members.
-	case ENCODE_STYLE_UTF8:
-		this->name.Format("%s", 
-			CChineseCodeLib::GB2312ToUTF8((LPCTSTR)this->name).c_str());
-		SetEncodeStyle(ENCODE_STYLE_UTF8);
-		break;
-
-	case ENCODE_STYLE_GB2312:
-		this->name.Format("%s", 
-			CChineseCodeLib::UTF8ToGB2312((LPCTSTR)this->name).c_str());
-		SetEncodeStyle(ENCODE_STYLE_GB2312);
-		break;
-
-	default:
-		break;
-	}
-}
+// void CStockBuyModel::ConvertEncodeFormat( int targetEncode )
+// {
+// 	if (GetEncodeStyle() == targetEncode)
+// 		return ;
+// 
+// 	switch (targetEncode) {
+// 
+// 	// TO BE opted. Convert more members.
+// 	case ENCODE_STYLE_UTF8:
+// 		this->name.Format("%s", 
+// 			CChineseCodeLib::GB2312ToUTF8((LPCTSTR)this->name).c_str());
+// 		SetEncodeStyle(ENCODE_STYLE_UTF8);
+// 		break;
+// 
+// 	case ENCODE_STYLE_GB2312:
+// 		this->name.Format("%s", 
+// 			CChineseCodeLib::UTF8ToGB2312((LPCTSTR)this->name).c_str());
+// 		SetEncodeStyle(ENCODE_STYLE_GB2312);
+// 		break;
+// 
+// 	default:
+// 		break;
+// 	}
+// }
 
 /**
  *	=====================  Stock hold model ===================== 
@@ -362,8 +384,8 @@ void CStockBuyModel::ConvertEncodeFormat( int targetEncode )
 CStockHoldModel::CStockHoldModel( void )
 	: CStockModelBase()
 	, id(-1)
-	, code(_T(""))
-	, name(_T(""))
+//	, code(_T(""))
+//	, name(_T(""))
 	, buy_price(_T(""))
 	, hold_cost(_T(""))
 	, hold_amount(_T(""))
@@ -375,29 +397,72 @@ CStockHoldModel::~CStockHoldModel( void )
 {
 }
 
-void CStockHoldModel::ConvertEncodeFormat( int targetEncode )
+// void CStockHoldModel::ConvertEncodeFormat( int targetEncode )
+// {
+// 	if (GetEncodeStyle() == targetEncode)
+// 		return ;
+// 
+// 	switch (targetEncode) {
+// 
+// 	// TO BE opted. Convert more members.
+// 	case ENCODE_STYLE_UTF8:
+// 		this->name.Format("%s", 
+// 			CChineseCodeLib::GB2312ToUTF8((LPCTSTR)this->name).c_str());
+// 		SetEncodeStyle(ENCODE_STYLE_UTF8);
+// 		break;
+// 
+// 	case ENCODE_STYLE_GB2312:
+// 		this->name.Format("%s", 
+// 			CChineseCodeLib::UTF8ToGB2312((LPCTSTR)this->name).c_str());
+// 		SetEncodeStyle(ENCODE_STYLE_GB2312);
+// 		break;
+// 
+// 	default:
+// 		break;
+// 	}
+// }
+
+/* ========== Stock Sell Model ============ */
+
+CStockSellModel::CStockSellModel( void )
+	: CStockModelBase()
+	, id(0)
+//	, code(_T(""))
+//	, name(_T(""))
+	, buy_price(_T(""))
+	, sell_price(_T(""))
+	, sell_amount(_T(""))
+	, sell_date(_T(""))
+	, each_earn(_T(""))
 {
-	if (GetEncodeStyle() == targetEncode)
-		return ;
 
-	switch (targetEncode) {
-
-	// TO BE opted. Convert more members.
-	case ENCODE_STYLE_UTF8:
-		this->name.Format("%s", 
-			CChineseCodeLib::GB2312ToUTF8((LPCTSTR)this->name).c_str());
-		SetEncodeStyle(ENCODE_STYLE_UTF8);
-		break;
-
-	case ENCODE_STYLE_GB2312:
-		this->name.Format("%s", 
-			CChineseCodeLib::UTF8ToGB2312((LPCTSTR)this->name).c_str());
-		SetEncodeStyle(ENCODE_STYLE_GB2312);
-		break;
-
-	default:
-		break;
-	}
 }
 
+CStockSellModel::~CStockSellModel( void )
+{
+}
 
+// void CStockSellModel::ConvertEncodeFormat( int targetEncode )
+// {
+// 	if (GetEncodeStyle() == targetEncode)
+// 		return ;
+// 
+// 	switch (targetEncode) {
+// 
+// 		// TO BE opted. Convert more members.
+// 	case ENCODE_STYLE_UTF8:
+// 		this->name.Format("%s", 
+// 			CChineseCodeLib::GB2312ToUTF8((LPCTSTR)this->name).c_str());
+// 		SetEncodeStyle(ENCODE_STYLE_UTF8);
+// 		break;
+// 
+// 	case ENCODE_STYLE_GB2312:
+// 		this->name.Format("%s", 
+// 			CChineseCodeLib::UTF8ToGB2312((LPCTSTR)this->name).c_str());
+// 		SetEncodeStyle(ENCODE_STYLE_GB2312);
+// 		break;
+// 
+// 	default:
+// 		break;
+// 	}
+// }
