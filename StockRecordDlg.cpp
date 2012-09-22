@@ -1,5 +1,5 @@
-
-// StockRecordDlg.cpp : ÊµÏÖÎÄ¼ş
+ï»¿
+// StockRecordDlg.cpp : å®ç°æ–‡ä»¶
 //
 
 #include "stdafx.h"
@@ -17,20 +17,20 @@
 #endif
 
 
-// ÓÃÓÚÓ¦ÓÃ³ÌĞò¡°¹ØÓÚ¡±²Ëµ¥ÏîµÄ CAboutDlg ¶Ô»°¿ò
+// ç”¨äºåº”ç”¨ç¨‹åºâ€œå…³äºâ€èœå•é¡¹çš„ CAboutDlg å¯¹è¯æ¡†
 
 class CAboutDlg : public CDialogEx
 {
 public:
 	CAboutDlg();
 
-// ¶Ô»°¿òÊı¾İ
+// å¯¹è¯æ¡†æ•°æ®
 	enum { IDD = IDD_ABOUTBOX };
 
 	protected:
-	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV Ö§³Ö
+	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV æ”¯æŒ
 
-// ÊµÏÖ
+// å®ç°
 protected:
 	DECLARE_MESSAGE_MAP()
 public:
@@ -55,7 +55,7 @@ void CAboutDlg::OnBnClickedOk()
 	CDialogEx::OnOK();
 }
 
-// CStockRecordDlg ¶Ô»°¿ò
+// CStockRecordDlg å¯¹è¯æ¡†
 
 
 
@@ -64,8 +64,16 @@ CStockRecordDlg::CStockRecordDlg(CWnd* pParent /*=NULL*/)
 	: CDialogEx(CStockRecordDlg::IDD, pParent)
 	, m_pDatabase(NULL)
 	, m_nDBStatus(-1)
+	, m_pTrayIcon(NULL)
+	, m_bIsWndHidden(false)
 {
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
+}
+
+CStockRecordDlg::~CStockRecordDlg(void)
+{
+	delete(m_pTrayIcon);
+	m_pTrayIcon = NULL;
 }
 
 void CStockRecordDlg::DoDataExchange(CDataExchange* pDX)
@@ -97,17 +105,22 @@ BEGIN_MESSAGE_MAP(CStockRecordDlg, CDialogEx)
 	ON_BN_CLICKED(IDC_BT_ABOUT, &CStockRecordDlg::OnBnClickedBtAbout)
 	ON_COMMAND(IDM_ABOUT, &CStockRecordDlg::OnMenuAbout)
 	ON_COMMAND(IDM_ALWAYS_TOP, &CStockRecordDlg::OnMenuAlwaysTop)
+	ON_WM_CREATE()
+	ON_MESSAGE(WM_ICON_NOTIFY, OnTrayNotification)
+	ON_COMMAND(ID_MENU_TRAYICON_SHOWWD, &CStockRecordDlg::OnMenuTrayiconShowwd)
+	ON_COMMAND(ID_MENU_TRAYICON_EXIT, &CStockRecordDlg::OnMenuTrayiconExit)
+	ON_UPDATE_COMMAND_UI(ID_MENU_TRAYICON_SHOWWD, &CStockRecordDlg::OnUpdateMenuTrayiconShowwd)
 END_MESSAGE_MAP()
 
-// CStockRecordDlg ÏûÏ¢´¦Àí³ÌĞò
+// CStockRecordDlg æ¶ˆæ¯å¤„ç†ç¨‹åº
 
 BOOL CStockRecordDlg::OnInitDialog()
 {
 	CDialogEx::OnInitDialog();
 
-	// ½«¡°¹ØÓÚ...¡±²Ëµ¥ÏîÌí¼Óµ½ÏµÍ³²Ëµ¥ÖĞ¡£
+	// å°†â€œå…³äº...â€èœå•é¡¹æ·»åŠ åˆ°ç³»ç»Ÿèœå•ä¸­ã€‚
 
-	// IDM_ABOUTBOX ±ØĞëÔÚÏµÍ³ÃüÁî·¶Î§ÄÚ¡£
+	// IDM_ABOUTBOX å¿…é¡»åœ¨ç³»ç»Ÿå‘½ä»¤èŒƒå›´å†…ã€‚
 	ASSERT((IDM_ABOUTBOX & 0xFFF0) == IDM_ABOUTBOX);
 	ASSERT(IDM_ABOUTBOX < 0xF000);
 
@@ -125,10 +138,10 @@ BOOL CStockRecordDlg::OnInitDialog()
 		}
 	}
 
-	// ÉèÖÃ´Ë¶Ô»°¿òµÄÍ¼±ê¡£µ±Ó¦ÓÃ³ÌĞòÖ÷´°¿Ú²»ÊÇ¶Ô»°¿òÊ±£¬¿ò¼Ü½«×Ô¶¯
-	//  Ö´ĞĞ´Ë²Ù×÷
-	SetIcon(m_hIcon, TRUE);			// ÉèÖÃ´óÍ¼±ê
-	SetIcon(m_hIcon, FALSE);		// ÉèÖÃĞ¡Í¼±ê
+	// è®¾ç½®æ­¤å¯¹è¯æ¡†çš„å›¾æ ‡ã€‚å½“åº”ç”¨ç¨‹åºä¸»çª—å£ä¸æ˜¯å¯¹è¯æ¡†æ—¶ï¼Œæ¡†æ¶å°†è‡ªåŠ¨
+	//  æ‰§è¡Œæ­¤æ“ä½œ
+	SetIcon(m_hIcon, TRUE);			// è®¾ç½®å¤§å›¾æ ‡
+	SetIcon(m_hIcon, FALSE);		// è®¾ç½®å°å›¾æ ‡
 
 	SetupDBTableNames();
 	OpenDatabase();
@@ -145,7 +158,7 @@ BOOL CStockRecordDlg::OnInitDialog()
 
 	//m_GridCtrl.ShowWindow(SW_HIDE);		// If no data, make grid invisible.
 
-	return TRUE;  // ³ı·Ç½«½¹µãÉèÖÃµ½¿Ø¼ş£¬·ñÔò·µ»Ø TRUE
+	return TRUE;  // é™¤éå°†ç„¦ç‚¹è®¾ç½®åˆ°æ§ä»¶ï¼Œå¦åˆ™è¿”å› TRUE
 }
 
 void CStockRecordDlg::OnSysCommand(UINT nID, LPARAM lParam)
@@ -161,19 +174,19 @@ void CStockRecordDlg::OnSysCommand(UINT nID, LPARAM lParam)
 	}
 }
 
-// Èç¹ûÏò¶Ô»°¿òÌí¼Ó×îĞ¡»¯°´Å¥£¬ÔòĞèÒªÏÂÃæµÄ´úÂë
-//  À´»æÖÆ¸ÃÍ¼±ê¡£¶ÔÓÚÊ¹ÓÃÎÄµµ/ÊÓÍ¼Ä£ĞÍµÄ MFC Ó¦ÓÃ³ÌĞò£¬
-//  Õâ½«ÓÉ¿ò¼Ü×Ô¶¯Íê³É¡£
+// å¦‚æœå‘å¯¹è¯æ¡†æ·»åŠ æœ€å°åŒ–æŒ‰é’®ï¼Œåˆ™éœ€è¦ä¸‹é¢çš„ä»£ç 
+//  æ¥ç»˜åˆ¶è¯¥å›¾æ ‡ã€‚å¯¹äºä½¿ç”¨æ–‡æ¡£/è§†å›¾æ¨¡å‹çš„ MFC åº”ç”¨ç¨‹åºï¼Œ
+//  è¿™å°†ç”±æ¡†æ¶è‡ªåŠ¨å®Œæˆã€‚
 
 void CStockRecordDlg::OnPaint()
 {
 	if (IsIconic())
 	{
-		CPaintDC dc(this); // ÓÃÓÚ»æÖÆµÄÉè±¸ÉÏÏÂÎÄ
+		CPaintDC dc(this); // ç”¨äºç»˜åˆ¶çš„è®¾å¤‡ä¸Šä¸‹æ–‡
 
 		SendMessage(WM_ICONERASEBKGND, reinterpret_cast<WPARAM>(dc.GetSafeHdc()), 0);
 
-		// Ê¹Í¼±êÔÚ¹¤×÷Çø¾ØĞÎÖĞ¾ÓÖĞ
+		// ä½¿å›¾æ ‡åœ¨å·¥ä½œåŒºçŸ©å½¢ä¸­å±…ä¸­
 		int cxIcon = GetSystemMetrics(SM_CXICON);
 		int cyIcon = GetSystemMetrics(SM_CYICON);
 		CRect rect;
@@ -181,7 +194,7 @@ void CStockRecordDlg::OnPaint()
 		int x = (rect.Width() - cxIcon + 1) / 2;
 		int y = (rect.Height() - cyIcon + 1) / 2;
 
-		// »æÖÆÍ¼±ê
+		// ç»˜åˆ¶å›¾æ ‡
 		dc.DrawIcon(x, y, m_hIcon);
 	}
 	else
@@ -190,8 +203,8 @@ void CStockRecordDlg::OnPaint()
 	}
 }
 
-//µ±ÓÃ»§ÍÏ¶¯×îĞ¡»¯´°¿ÚÊ±ÏµÍ³µ÷ÓÃ´Ëº¯ÊıÈ¡µÃ¹â±ê
-//ÏÔÊ¾¡£
+//å½“ç”¨æˆ·æ‹–åŠ¨æœ€å°åŒ–çª—å£æ—¶ç³»ç»Ÿè°ƒç”¨æ­¤å‡½æ•°å–å¾—å…‰æ ‡
+//æ˜¾ç¤ºã€‚
 HCURSOR CStockRecordDlg::OnQueryDragIcon()
 {
 	return static_cast<HCURSOR>(m_hIcon);
@@ -283,11 +296,11 @@ int CStockRecordDlg::SetGirdData( int nRowCount, int nColCount, char** result )
 		m_GridCtrl.ShowWindow(SW_HIDE);
 
 		if (m_enumRecordTable == T_STOCKBUY) {
-			if (MessageBox("Ã»ÓĞ¼ÇÂ¼£¬ÊÇ·ñÒªÔö¼Ó¼ÇÂ¼£¿", "Confirm", MB_YESNO) == IDYES) {
+			if (MessageBox("æ²¡æœ‰è®°å½•ï¼Œæ˜¯å¦è¦å¢åŠ è®°å½•ï¼Ÿ", "Confirm", MB_YESNO) == IDYES) {
 				OnStockbuyAdd();
 			}
 		} else if (m_enumRecordTable == T_STOCKMONEY) {
-			if (MessageBox("Ã»ÓĞ¼ÇÂ¼£¬ÊÇ·ñÒªÔö¼Ó¼ÇÂ¼£¿", "Confirm", MB_YESNO) == IDYES) {
+			if (MessageBox("æ²¡æœ‰è®°å½•ï¼Œæ˜¯å¦è¦å¢åŠ è®°å½•ï¼Ÿ", "Confirm", MB_YESNO) == IDYES) {
 				OnStockmoneyInout();
 			}
 		}
@@ -750,7 +763,7 @@ void CStockRecordDlg::OnGridRClick( NMHDR *pNotifyStruct, LRESULT* pResult )
 			//popupMenu->AppendMenuA(MF_POPUP, (UINT)GetMenu()->GetSubMenu(1)->GetSafeHmenu(), "HAHA") ;
 			//GetMenu()->GetSubMenu(1)->Detach();
 //  		popupMenu->AppendMenu(MF_SEPARATOR);
-// 			popupMenu->AppendMenuA(MF_STRING, IDM_ABOUT, "¹ØÓÚ");
+// 			popupMenu->AppendMenuA(MF_STRING, IDM_ABOUT, "å…³äº");
 		}
 		break;
 
@@ -915,7 +928,7 @@ std::string CStockRecordDlg::GetActiveTableName( void )
  */
 void CStockRecordDlg::OnMenuRemoveRecord( UINT uid )
 {
-	if (MessageBox("È·¶¨ÒªÉ¾³ı¼ÇÂ¼£¿", "Confirm", MB_YESNO) != IDYES) {
+	if (MessageBox("ç¡®å®šè¦åˆ é™¤è®°å½•ï¼Ÿ", "Confirm", MB_YESNO) != IDYES) {
 		return;
 	}
 
@@ -1277,7 +1290,83 @@ void CStockRecordDlg::OnMenuAlwaysTop()
 void CStockRecordDlg::OnRButtonDown(UINT nFlags, CPoint point)
 {
 	// The dialog other than the grid will receive the WM_RBUTTONDOWN message.
-	MessageBox("CStockRecordDlg::OnRButtonDown()");
+	// MessageBox("CStockRecordDlg::OnRButtonDown()");
 
 	CDialogEx::OnRButtonDown(nFlags, point);
+}
+
+
+int CStockRecordDlg::OnCreate(LPCREATESTRUCT lpCreateStruct)
+{
+	if (CDialogEx::OnCreate(lpCreateStruct) == -1)
+		return -1;
+
+	m_pTrayIcon = new CTrayIcon(this, WM_ICON_NOTIFY, "StockRecord",	\
+		AfxGetApp()->LoadIconA(IDR_MAINFRAME), IDR_MENU3, 1);
+	if (m_pTrayIcon)
+		m_pTrayIcon->SetTooltipText("éšè—ä¸»ç¨‹åº");
+
+	return 0;
+}
+
+/**
+ *	Response for mouse click or keyboard stroke.
+ */
+HRESULT CStockRecordDlg::OnTrayNotification( WPARAM wParam, LPARAM lParam )
+{
+	// Returns quickly if it is not for this tray icon.
+	if (!m_pTrayIcon || (UINT)wParam != m_pTrayIcon->GetTrayIconID())
+		return 0L;
+
+	/* Response for rclick */
+	if (LOWORD(lParam) == WM_RBUTTONDOWN) {	
+		CMenu menu, *pSubMenu = NULL;
+		if (!menu.LoadMenu(IDR_MENU3))			return 0L;
+		if (!(pSubMenu = menu.GetSubMenu(0)))	return 0L;
+		/* Make first menu item the default (bold font) */
+		::SetMenuDefaultItem(pSubMenu->m_hMenu, 0, TRUE);
+
+		CPoint pos;
+		GetCursorPos(&pos);
+		pSubMenu->TrackPopupMenu(TPM_LEFTALIGN | TPM_LEFTBUTTON, pos.x, pos.y, this);
+		menu.DestroyMenu();
+	} else if (LOWORD(lParam) == WM_LBUTTONDBLCLK) {
+		/* Response for left double click */
+		OnMenuTrayiconShowwd();
+	}
+
+	return 1L;
+}
+
+/* Show or hide the dialog */
+void CStockRecordDlg::OnMenuTrayiconShowwd()
+{
+	if (m_bIsWndHidden) {
+		AfxGetMainWnd()->ShowWindow(SW_MINIMIZE);
+		AfxGetMainWnd()->ShowWindow(SW_RESTORE);
+		AfxGetMainWnd()->BringWindowToTop();
+		if (m_pTrayIcon)
+			m_pTrayIcon->SetTooltipText("éšè—ä¸»ç¨‹åº");
+		m_bIsWndHidden = false;
+	} else {
+		AfxGetMainWnd()->ShowWindow(SW_MINIMIZE);
+		AfxGetMainWnd()->ShowWindow(SW_HIDE);
+		if (m_pTrayIcon)
+			m_pTrayIcon->SetTooltipText("æ˜¾ç¤ºä¸»ç¨‹åº");
+		m_bIsWndHidden = true;
+	}
+}
+
+void CStockRecordDlg::OnMenuTrayiconExit()
+{
+	/* It sends WM_DESTROY and WM_NCDESTROY messages to the window. */
+	DestroyWindow();
+}
+
+void CStockRecordDlg::OnUpdateMenuTrayiconShowwd(CCmdUI *pCmdUI)
+{
+	if (m_bIsWndHidden)
+		pCmdUI->SetText("æ˜¾ç¤ºä¸»ç•Œé¢(&S)");
+	else
+		pCmdUI->SetText("éšè—ä¸»ç•Œé¢(&H)");
 }

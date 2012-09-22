@@ -123,6 +123,9 @@
     <ClInclude Include="FieldNamesMap.h">
       <Filter>头文件\Utility_Headers</Filter>
     </ClInclude>
+    <ClInclude Include="TrayIcon.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="StockRecord.cpp">
@@ -184,6 +187,9 @@
     </ClCompile>
     <ClCompile Include="FieldNamesMap.cpp">
       <Filter>源文件\Utility_Srcs</Filter>
+    </ClCompile>
+    <ClCompile Include="TrayIcon.cpp">
+      <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

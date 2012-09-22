@@ -41,7 +41,9 @@ local.properties
 *.user
 *.sln.docstates
 *.db
+*.exe
 *.log
+*.lnk
 
 # Build results
 [Dd]ebug/

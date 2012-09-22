@@ -126,6 +126,7 @@
     <ClInclude Include="StockRecordDlg.h" />
     <ClInclude Include="StockSellDlg.h" />
     <ClInclude Include="targetver.h" />
+    <ClInclude Include="TrayIcon.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ChineseCodeLib.cpp" />
@@ -151,6 +152,7 @@
     <ClCompile Include="StockRecord.cpp" />
     <ClCompile Include="StockRecordDlg.cpp" />
     <ClCompile Include="StockSellDlg.cpp" />
+    <ClCompile Include="TrayIcon.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="StockRecord.rc" />

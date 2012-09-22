@@ -12,6 +12,7 @@ extern "C" {
 #include "StockModel.h"
 #include "StockBuyDlg.h"
 #include "StockSellDlg.h"
+#include "TrayIcon.h"
 
 #include <vector>
 using namespace std;
@@ -29,6 +30,7 @@ class CStockRecordDlg : public CDialogEx
 // 构造
 public:
 	CStockRecordDlg(CWnd* pParent = NULL);	// 标准构造函数
+	~CStockRecordDlg(void);
 
 // 对话框数据
 	enum { IDD = IDD_STOCKRECORD_DIALOG };
@@ -60,6 +62,14 @@ protected:
 	afx_msg void OnStockholdPlanSell();
 	afx_msg void OnStockholdSell();
 	afx_msg void OnStockmoneyInout();
+	afx_msg void OnBnClickedBtAbout();
+	afx_msg void OnMenuAbout();
+	afx_msg void OnMenuAlwaysTop();
+	afx_msg void OnRButtonDown(UINT nFlags, CPoint point);
+	afx_msg HRESULT OnTrayNotification(WPARAM wParam, LPARAM lParam);// 响应 TrayIcon 的消息
+	afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
+	afx_msg void OnMenuTrayiconShowwd();
+	afx_msg void OnMenuTrayiconExit();
 	DECLARE_MESSAGE_MAP()
 
 private:
@@ -111,6 +121,8 @@ public:
 private:
 	
 	CGridCtrl m_GridCtrl;
+	CTrayIcon* m_pTrayIcon;
+	bool m_bIsWndHidden;
 
 	/** names of database and tables */
 	string	m_strDBName;
@@ -132,6 +144,7 @@ private:
 	vector<int> m_vecStockSellIds;
 	vector<int> m_vecStockMoneyIds;
 
+private:
 	/** Clear related vector according by m_enumRecordTable to do a new display. */
 	void ClearRecordIds(void);
 
@@ -142,11 +155,9 @@ private:
 	 */
 	void StoreRecordId(int id);
 
+
+	
 public:
-
-
-	afx_msg void OnBnClickedBtAbout();
-	afx_msg void OnMenuAbout();
-	afx_msg void OnMenuAlwaysTop();
-	afx_msg void OnRButtonDown(UINT nFlags, CPoint point);
+	
+	afx_msg void OnUpdateMenuTrayiconShowwd(CCmdUI *pCmdUI);
 };

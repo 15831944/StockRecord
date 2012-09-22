@@ -119,18 +119,23 @@ BOOL CStockSellDlg::OnInitDialog()
 	CDialogEx::OnInitDialog();
 
 	m_comboEarn.ResetContent();
-	m_comboEarn.AddString("10%");
-	m_comboEarn.AddString("7%");
-	m_comboEarn.AddString("5%");
-	m_comboEarn.AddString("3%");
-	m_comboEarn.SetCurSel(2);
-	
 	m_comboLoss.ResetContent();
-	m_comboLoss.AddString("-10%");
-	m_comboLoss.AddString("-7%");
-	m_comboLoss.AddString("-5%");
-	m_comboLoss.AddString("-3%");
-	m_comboLoss.SetCurSel(2);
+
+	CString strValue("");
+	for (int i = 10; i >= 1; --i) {
+		strValue.Empty();
+		strValue.Format("%d%%", i);
+		m_comboEarn.AddString((LPCTSTR)strValue);
+	}
+
+	for (int i = 10; i >= 1; --i) {
+		strValue.Empty();
+		strValue.Format("-%d%%", i);
+		m_comboLoss.AddString((LPCTSTR)strValue);
+	}
+	
+	m_comboEarn.SetCurSel(5);
+	m_comboLoss.SetCurSel(5);
 
 	OnSelchangeComboEarn();
 	OnSelchangeComboLoss();
@@ -149,7 +154,7 @@ void CStockSellDlg::OnShowWindow(BOOL bShow, UINT nStatus)
 }
 
 /**
- *	str will be like "5%".
+ *	str will be like "5%" or "-5%".
  *  The returned value will be : m_fHoldCost * (1.0f + "5%").
  */
 float CStockSellDlg::GetThresholdPriceFromCString( CString strPercent )
