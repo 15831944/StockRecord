@@ -236,6 +236,9 @@ public:
 
 /* 颜色 */
 	// 设置和获取背景颜色，设置和获取行颜色
+	/* Added by XIN LONG */
+	void SetNonFixedRowBkColor(int rowIdx, COLORREF clr );
+
     void     SetGridBkColor(COLORREF clr)         { m_crGridBkColour = clr;           }
     COLORREF GetGridBkColor() const               { return m_crGridBkColour;          }
     void     SetGridLineColor(COLORREF clr)       { m_crGridLineColour = clr;         }
@@ -389,6 +392,9 @@ public:
     BOOL GetModified(int nRow = -1, int nCol = -1);
     BOOL IsCellFixed(int nRow, int nCol);
 	BOOL IsItemEditing(int nRow, int nCol);
+	// The following 2 functions are added by XIN LONG. //
+	BOOL IsCellInFixedColomn(int nRow, int nCol);
+	BOOL IsCellInFixedRow(int nRow, int nCol);
 
     BOOL   SetItem(const GV_ITEM* pItem);
     BOOL   GetItem(GV_ITEM* pItem);

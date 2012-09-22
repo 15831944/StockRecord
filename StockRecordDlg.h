@@ -145,4 +145,8 @@ private:
 public:
 
 
+	afx_msg void OnBnClickedBtAbout();
+	afx_msg void OnMenuAbout();
+	afx_msg void OnMenuAlwaysTop();
+	afx_msg void OnRButtonDown(UINT nFlags, CPoint point);
 };

@@ -34,6 +34,7 @@ public:
 protected:
 	DECLARE_MESSAGE_MAP()
 public:
+	afx_msg void OnBnClickedOk();
 };
 
 CAboutDlg::CAboutDlg() : CDialogEx(CAboutDlg::IDD)
@@ -46,8 +47,13 @@ void CAboutDlg::DoDataExchange(CDataExchange* pDX)
 }
 
 BEGIN_MESSAGE_MAP(CAboutDlg, CDialogEx)
+	ON_BN_CLICKED(IDOK, &CAboutDlg::OnBnClickedOk)
 END_MESSAGE_MAP()
 
+void CAboutDlg::OnBnClickedOk()
+{
+	CDialogEx::OnOK();
+}
 
 // CStockRecordDlg 对话框
 
@@ -74,6 +80,7 @@ BEGIN_MESSAGE_MAP(CStockRecordDlg, CDialogEx)
 	ON_WM_QUERYDRAGICON()
 	ON_WM_CLOSE()
 	ON_WM_DESTROY()
+	ON_WM_RBUTTONDOWN()
 	ON_COMMAND(ID_MENU_HOLD_RECORD, &CStockRecordDlg::OnMenuHoldRecord)
 	ON_COMMAND(ID_MENU_BUY_RECORD, &CStockRecordDlg::OnMenuBuyRecord)
 	ON_COMMAND(ID_MENU_SELL_RECORD, &CStockRecordDlg::OnMenuSellRecord)
@@ -81,13 +88,16 @@ BEGIN_MESSAGE_MAP(CStockRecordDlg, CDialogEx)
 	ON_BN_CLICKED(IDC_BT_EXIT, &CStockRecordDlg::OnBnClickedExit)
 	ON_NOTIFY(NM_RCLICK, IDC_GRID, &CStockRecordDlg::OnGridRClick)
 	ON_NOTIFY(NM_DBLCLK, IDC_GRID, &CStockRecordDlg::OnGridDBClick)
-	ON_COMMAND_RANGE(IDM_STOCKBUY_REMOVE, IDM_STOCKMONEY_REMOVE, &CStockRecordDlg::OnMenuRemoveRecord)
+	ON_COMMAND_RANGE(IDM_STOCKBUY_REMOVE, IDM_STOCKMONEY_REMOVE,	\
+		&CStockRecordDlg::OnMenuRemoveRecord)
 	ON_COMMAND(IDM_STOCKBUY_ADD, &CStockRecordDlg::OnStockbuyAdd)
 	ON_COMMAND(IDM_STOCKHOLD_PLAN_SELL, &CStockRecordDlg::OnStockholdPlanSell)
 	ON_COMMAND(IDM_STOCKHOLD_SELL, &CStockRecordDlg::OnStockholdSell)
 	ON_COMMAND(IDM_STOCKMONEY_INOUT, &CStockRecordDlg::OnStockmoneyInout)
+	ON_BN_CLICKED(IDC_BT_ABOUT, &CStockRecordDlg::OnBnClickedBtAbout)
+	ON_COMMAND(IDM_ABOUT, &CStockRecordDlg::OnMenuAbout)
+	ON_COMMAND(IDM_ALWAYS_TOP, &CStockRecordDlg::OnMenuAlwaysTop)
 END_MESSAGE_MAP()
-
 
 // CStockRecordDlg 消息处理程序
 
@@ -712,45 +722,65 @@ void CStockRecordDlg::OnBnClickedExit()
  */
 void CStockRecordDlg::OnGridRClick( NMHDR *pNotifyStruct, LRESULT* pResult )
 {
-	NM_GRIDVIEW* pItem = (NM_GRIDVIEW*) pNotifyStruct;
-
-	/* DO NOT popup submenu on fixed column or row */
-	if (m_GridCtrl.IsCellFixed(pItem->iRow, pItem->iColumn)) {
-		*pResult = 1;
-		return;
-	}
-
 	/* Get position where right click occurs. */
 	DWORD dwPos = GetMessagePos();	
 	CPoint point (LOWORD(dwPos), HIWORD(dwPos));
-
 	CMenu menu;
 	CMenu* popupMenu(NULL);		// MUST be inited.
 	menu.LoadMenuA(IDR_MENU2);
+	
+	/* Right click on invalid cell, or on fixed colomn,
+	 * Only the "Add Record" menu item (if there is) can be displayed.
+	 */
+	bool isRClickOnDataCell = false;
+	NM_GRIDVIEW* pItem = (NM_GRIDVIEW*) pNotifyStruct;
+	if (m_GridCtrl.IsValid(pItem->iRow, pItem->iColumn) && 
+		!m_GridCtrl.IsCellInFixedRow(pItem->iRow, pItem->iColumn)) {
+
+		isRClickOnDataCell = true;
+	}
 
 	/* Get related submenu according to current opened table */
 	switch (m_enumRecordTable) {
 	case T_STOCKBUY:
 		popupMenu = menu.GetSubMenu(0);
+		if (!isRClickOnDataCell) {	// TODO: wait to BE reviewed.
+			popupMenu->DeleteMenu(IDM_STOCKBUY_REMOVE, MF_BYCOMMAND);
+			// popupMenu = GetMenu()->GetSubMenu(1);	
+			//popupMenu->AppendMenuA(MF_POPUP, (UINT)GetMenu()->GetSubMenu(1)->GetSafeHmenu(), "HAHA") ;
+			//GetMenu()->GetSubMenu(1)->Detach();
+//  		popupMenu->AppendMenu(MF_SEPARATOR);
+// 			popupMenu->AppendMenuA(MF_STRING, IDM_ABOUT, "关于");
+		}
 		break;
+
 	case T_STOCKHOLD:
-		popupMenu = menu.GetSubMenu(1);
+		if (isRClickOnDataCell)
+			popupMenu = menu.GetSubMenu(1);
 		break;
+
 	case T_STOCKSELL:
-		popupMenu = menu.GetSubMenu(2);
+		if (isRClickOnDataCell)
+			popupMenu = menu.GetSubMenu(2);
 		break;
+
 	case T_STOCKMONEY:
 		popupMenu = menu.GetSubMenu(3);
+		if (!isRClickOnDataCell) {
+			popupMenu->DeleteMenu(IDM_STOCKMONEY_REMOVE, MF_BYCOMMAND);
+		}
 		break;
+
 	default:
 		break;
 	}
 
 	/* Popup the submenu */
 	if (popupMenu) {
+		DrawMenuBar();
 		popupMenu->TrackPopupMenu(TPM_LEFTALIGN | TPM_LEFTBUTTON, point.x, point.y, this);
 	}
-
+	
 	menu.DestroyMenu();
 	*pResult = 0;
 }
@@ -760,16 +790,19 @@ void CStockRecordDlg::OnGridRClick( NMHDR *pNotifyStruct, LRESULT* pResult )
  */
 void CStockRecordDlg::OnGridDBClick( NMHDR *pNotifyStruct, LRESULT* pResult )
 {
+	/* Ignore double click on invalid cells and fixed row cells. */
 	NM_GRIDVIEW* pItem = (NM_GRIDVIEW*) pNotifyStruct;
+	if (!m_GridCtrl.IsValid(pItem->iRow, pItem->iColumn) || 
+		m_GridCtrl.IsCellInFixedRow(pItem->iRow, pItem->iColumn)) {
 
-	/* DO NOT popup sell dialog on fixed column or row */
-	if (m_GridCtrl.IsCellFixed(pItem->iRow, pItem->iColumn)) {
 		*pResult = 1;
-		return;
+		return ;
 	}
 
 	if (m_enumRecordTable == T_STOCKHOLD)
 		OnStockholdSell();
+	else if (m_enumRecordTable == T_STOCKBUY)
+		OnStockbuyAdd();
 }
 
 /**
@@ -1212,4 +1245,39 @@ void CStockRecordDlg::MakeMenuItemCheckedByActiveTable(void)
 	default:
 		break;
 	}
+}
+
+void CStockRecordDlg::OnBnClickedBtAbout()
+{
+	CAboutDlg aboutDlg;
+	aboutDlg.DoModal();
+}
+
+void CStockRecordDlg::OnMenuAbout()
+{
+	OnBnClickedBtAbout();
+}
+
+void CStockRecordDlg::OnMenuAlwaysTop()
+{
+	CRect rect;
+	GetWindowRect(&rect);
+	UINT nCheckState = 
+		GetMenu()->GetSubMenu(1)->GetMenuState(IDM_ALWAYS_TOP, MF_BYCOMMAND);
+
+	if (MF_CHECKED == (nCheckState & MF_CHECKED)) {
+		SetWindowPos(&wndNoTopMost, rect.left, rect.top, -1, -1, SWP_NOSIZE);
+		GetMenu()->GetSubMenu(1)->CheckMenuItem(IDM_ALWAYS_TOP, MF_UNCHECKED);
+	} else {
+		SetWindowPos(&wndTopMost, rect.left, rect.top, -1, -1, SWP_NOSIZE);
+		GetMenu()->GetSubMenu(1)->CheckMenuItem(IDM_ALWAYS_TOP, MF_CHECKED);
+	}
+}
+
+void CStockRecordDlg::OnRButtonDown(UINT nFlags, CPoint point)
+{
+	// The dialog other than the grid will receive the WM_RBUTTONDOWN message.
+	MessageBox("CStockRecordDlg::OnRButtonDown()");
+
+	CDialogEx::OnRButtonDown(nFlags, point);
 }

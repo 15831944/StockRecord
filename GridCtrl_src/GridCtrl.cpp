@@ -5343,6 +5343,17 @@ BOOL CGridCtrl::IsCellFixed(int nRow, int nCol)
     return (nRow < GetFixedRowCount() || nCol < GetFixedColumnCount());
 }
 
+/* Added by XIN LONG */
+BOOL CGridCtrl::IsCellInFixedColomn(int nRow, int nCol) 
+{
+	return nCol < GetFixedColumnCount();
+}
+
+BOOL CGridCtrl::IsCellInFixedRow(int nRow, int nCol) 
+{
+	return nRow < GetFixedRowCount();
+}
+
 void CGridCtrl::SetModified(BOOL bModified /*=TRUE*/, int nRow /*=-1*/, int nCol /*=-1*/)
 {
     // Cannot guarantee sorting anymore...
