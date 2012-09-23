@@ -45,6 +45,7 @@ protected:
 
 	// 生成的消息映射函数
 	virtual BOOL OnInitDialog();
+	virtual BOOL PreTranslateMessage(MSG* pMsg);
 	afx_msg void OnSysCommand(UINT nID, LPARAM lParam);
 	afx_msg void OnPaint();
 	afx_msg HCURSOR OnQueryDragIcon();
@@ -154,10 +155,6 @@ private:
 	 *  This method may not be good, but it can work in this condition.
 	 */
 	void StoreRecordId(int id);
-
-
-	
 public:
 	
-	afx_msg void OnUpdateMenuTrayiconShowwd(CCmdUI *pCmdUI);
 };

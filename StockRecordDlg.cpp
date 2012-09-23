@@ -106,10 +106,9 @@ BEGIN_MESSAGE_MAP(CStockRecordDlg, CDialogEx)
 	ON_COMMAND(IDM_ABOUT, &CStockRecordDlg::OnMenuAbout)
 	ON_COMMAND(IDM_ALWAYS_TOP, &CStockRecordDlg::OnMenuAlwaysTop)
 	ON_WM_CREATE()
-	ON_MESSAGE(WM_ICON_NOTIFY, OnTrayNotification)
+	ON_MESSAGE(WM_ICON_NOTIFY, &CStockRecordDlg::OnTrayNotification)
 	ON_COMMAND(ID_MENU_TRAYICON_SHOWWD, &CStockRecordDlg::OnMenuTrayiconShowwd)
 	ON_COMMAND(ID_MENU_TRAYICON_EXIT, &CStockRecordDlg::OnMenuTrayiconExit)
-	ON_UPDATE_COMMAND_UI(ID_MENU_TRAYICON_SHOWWD, &CStockRecordDlg::OnUpdateMenuTrayiconShowwd)
 END_MESSAGE_MAP()
 
 // CStockRecordDlg 消息处理程序
@@ -790,6 +789,7 @@ void CStockRecordDlg::OnGridRClick( NMHDR *pNotifyStruct, LRESULT* pResult )
 
 	/* Popup the submenu */
 	if (popupMenu) {
+		SetForegroundWindow();
 		DrawMenuBar();
 		popupMenu->TrackPopupMenu(TPM_LEFTALIGN | TPM_LEFTBUTTON, point.x, point.y, this);
 	}
@@ -1326,12 +1326,18 @@ HRESULT CStockRecordDlg::OnTrayNotification( WPARAM wParam, LPARAM lParam )
 		/* Make first menu item the default (bold font) */
 		::SetMenuDefaultItem(pSubMenu->m_hMenu, 0, TRUE);
 
+		pSubMenu->ModifyMenu(ID_MENU_TRAYICON_SHOWWD, MF_BYCOMMAND,		\
+						ID_MENU_TRAYICON_SHOWWD, 
+						m_bIsWndHidden ? _T("显示主界面") : _T("隐藏主界面"));
 		CPoint pos;
 		GetCursorPos(&pos);
+		DrawMenuBar();
+		SetForegroundWindow();
 		pSubMenu->TrackPopupMenu(TPM_LEFTALIGN | TPM_LEFTBUTTON, pos.x, pos.y, this);
+		pSubMenu->Detach();
 		menu.DestroyMenu();
 	} else if (LOWORD(lParam) == WM_LBUTTONDBLCLK) {
-		/* Response for left double click */
+		/* Response for double left click */
 		OnMenuTrayiconShowwd();
 	}
 
@@ -1341,32 +1347,63 @@ HRESULT CStockRecordDlg::OnTrayNotification( WPARAM wParam, LPARAM lParam )
 /* Show or hide the dialog */
 void CStockRecordDlg::OnMenuTrayiconShowwd()
 {
-	if (m_bIsWndHidden) {
-		AfxGetMainWnd()->ShowWindow(SW_MINIMIZE);
-		AfxGetMainWnd()->ShowWindow(SW_RESTORE);
-		AfxGetMainWnd()->BringWindowToTop();
-		if (m_pTrayIcon)
-			m_pTrayIcon->SetTooltipText("隐藏主程序");
-		m_bIsWndHidden = false;
-	} else {
-		AfxGetMainWnd()->ShowWindow(SW_MINIMIZE);
-		AfxGetMainWnd()->ShowWindow(SW_HIDE);
-		if (m_pTrayIcon)
-			m_pTrayIcon->SetTooltipText("显示主程序");
-		m_bIsWndHidden = true;
-	}
+	AfxGetMainWnd()->ShowWindow(SW_MINIMIZE);
+	AfxGetMainWnd()->ShowWindow(m_bIsWndHidden ? SW_RESTORE : SW_HIDE);
+	if (m_pTrayIcon)
+		m_pTrayIcon->SetTooltipText(m_bIsWndHidden ? _T("隐藏主界面") : _T("显示主界面"));
+	m_bIsWndHidden = !m_bIsWndHidden;
 }
 
 void CStockRecordDlg::OnMenuTrayiconExit()
 {
-	/* It sends WM_DESTROY and WM_NCDESTROY messages to the window. */
-	DestroyWindow();
+	DestroyWindow();	/* Send WM_DESTROY and WM_NCDESTROY msg. */
 }
 
-void CStockRecordDlg::OnUpdateMenuTrayiconShowwd(CCmdUI *pCmdUI)
+BOOL CStockRecordDlg::PreTranslateMessage(MSG* pMsg)
 {
-	if (m_bIsWndHidden)
-		pCmdUI->SetText("显示主界面(&S)");
-	else
-		pCmdUI->SetText("隐藏主界面(&H)");
+	if (WM_KEYUP == pMsg->message) {
+		switch (pMsg->wParam) {
+
+		case 0x42:	/* B + CTRL will activate stock_buy table */
+			if (GetAsyncKeyState(VK_CONTROL) & 0x8000) {
+				OnMenuBuyRecord();
+				/* Return TRUE, TranslateMessage() won't get a chance to handle */
+				return TRUE;
+			}
+			break;
+
+		case 0x53:	/* S + CTRL will activate stock_sell table */
+			if (GetAsyncKeyState(VK_CONTROL) & 0x8000) {
+				OnMenuSellRecord();
+				return TRUE;
+			}
+			break;
+
+		case 0x48:	/* H + CONTRL will activate stock_hold table */
+			if (GetAsyncKeyState(VK_CONTROL) & 0x8000) {
+				OnMenuHoldRecord();
+				return TRUE;
+			}
+			break;
+
+		case 0x4D:	/* M + CONTRL will activate stock_money table */
+			if (GetAsyncKeyState(VK_CONTROL) & 0x8000) {
+				OnMenuMoneyRecord();
+				return TRUE;
+			}
+			break;
+
+		case 0x54:	/* T + CONTROL will hide the dialog (only hide) */
+			if (GetAsyncKeyState(VK_CONTROL) & 0x8000) {
+				OnMenuTrayiconShowwd();
+				return TRUE;
+			}
+			break;
+
+		default:
+			break;
+		}
+	}
+
+	return CDialogEx::PreTranslateMessage(pMsg);
 }

@@ -45,6 +45,7 @@ void CStockBuyDlg::DoDataExchange(CDataExchange* pDX)
 BEGIN_MESSAGE_MAP(CStockBuyDlg, CDialogEx)
 	ON_BN_CLICKED(IDOK, &CStockBuyDlg::OnBnClickedOk)
 	ON_BN_CLICKED(IDCANCEL, &CStockBuyDlg::OnBnClickedCancel)
+	ON_WM_SHOWWINDOW()
 END_MESSAGE_MAP()
 
 
@@ -90,4 +91,14 @@ void CStockBuyDlg::OnBnClickedOk()
 void CStockBuyDlg::OnBnClickedCancel()
 {
 	CDialogEx::OnCancel();
+}
+
+void CStockBuyDlg::OnShowWindow(BOOL bShow, UINT nStatus)
+{
+	CDialogEx::OnShowWindow(bShow, nStatus);
+
+	/* Make the sell price edit focused */
+	CEdit* pEdit = (CEdit*)GetDlgItem(IDC_EDIT_BUY_CODE);
+	pEdit->SetSel(0, -1);
+	pEdit->SetFocus(); 
 }
