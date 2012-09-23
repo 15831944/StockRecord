@@ -124,6 +124,7 @@ private:
 	CGridCtrl m_GridCtrl;
 	CTrayIcon* m_pTrayIcon;
 	bool m_bIsWndHidden;
+	bool m_bIsPlanSell;
 
 	/** names of database and tables */
 	string	m_strDBName;

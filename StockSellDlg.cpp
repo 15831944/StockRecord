@@ -25,6 +25,7 @@ CStockSellDlg::CStockSellDlg(CWnd* pParent /*=NULL*/)
 	, m_strEachEarn(_T("0"))
 	, m_strEarnPrice(_T(""))
 	, m_strLossPrice(_T(""))
+	, m_bIsPlanSell(false)
 {
 }
 
@@ -151,6 +152,14 @@ void CStockSellDlg::OnShowWindow(BOOL bShow, UINT nStatus)
 	CEdit* pEdit = (CEdit*)GetDlgItem(IDC_EDIT_SELL_PRICE);
 	pEdit->SetSel(0, -1);
 	pEdit->SetFocus(); 
+
+	/* Disable "Sell" button if m_bIsPlanSell is true. */
+	if (m_bIsPlanSell) {
+		m_bIsPlanSell = false;/* Make it be false regardless of its origin value. */
+		CButton* pButton = (CButton*)GetDlgItem(IDOK);
+		if (pButton)
+			pButton->EnableWindow(FALSE);
+	}
 }
 
 /**

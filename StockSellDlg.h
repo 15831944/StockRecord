@@ -56,7 +56,14 @@ private:
 	 */
 	float m_fHoldCost;
 
+	/* Its value is set from CStockRecordDlg::OnStockholdSell().
+	 * If m_bIsPlanSell is true, then the sellDlg should disable
+	 * "Sell" button in OnShowWindow() function before dlg is displayed.
+	 */
+	bool m_bIsPlanSell;
+
 public:
 	void SetHoldAmount(int holdAmount)	{m_nHoldAmount = holdAmount;}
 	void SetHoldCost(float fHoldCost)	{m_fHoldCost = fHoldCost;}
+	void SetIsPlanSell(bool isPlanSell)	{m_bIsPlanSell = isPlanSell;}
 };

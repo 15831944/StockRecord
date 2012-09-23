@@ -66,6 +66,7 @@ CStockRecordDlg::CStockRecordDlg(CWnd* pParent /*=NULL*/)
 	, m_nDBStatus(-1)
 	, m_pTrayIcon(NULL)
 	, m_bIsWndHidden(false)
+	, m_bIsPlanSell(false)
 {
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
 }
@@ -817,9 +818,9 @@ void CStockRecordDlg::OnGridDBClick( NMHDR *pNotifyStruct, LRESULT* pResult )
 		*pResult = 1;
 		return ;
 	}
-
+	
 	if (m_enumRecordTable == T_STOCKHOLD)
-		OnStockholdSell();
+		OnStockholdPlanSell();
 	else if (m_enumRecordTable == T_STOCKBUY)
 		OnStockbuyAdd();
 }
@@ -1045,6 +1046,13 @@ void CStockRecordDlg::OnStockholdPlanSell()
 		MessageBox("Database is not opened.", "Oops.");
 		return ;
 	}
+
+	/* Let m_bIsPlanSell be true, then call OnStockholdSell().
+	 * m_bIsPlanSell's value will pass to sellDlg.
+	 * SellDlg will disable the "Sell" button is m_bIsPlanSell is true.
+	 */
+	m_bIsPlanSell = true;
+	OnStockholdSell();
 }
 
 void CStockRecordDlg::OnStockholdSell()
@@ -1071,6 +1079,8 @@ void CStockRecordDlg::OnStockholdSell()
 	sellDlg.m_nSellAmount = nHoldAmount;
 	sellDlg.SetHoldAmount(nHoldAmount);
 	sellDlg.SetHoldCost(fHoldCost);
+	sellDlg.SetIsPlanSell(m_bIsPlanSell);
+	m_bIsPlanSell = false;/* Let m_bIsPlanSell be false regardless its origin value */
 	
 	if (sellDlg.DoModal() != IDOK)
 		return ;
