@@ -151,13 +151,11 @@ BOOL CStockRecordDlg::OnInitDialog()
 	m_GridCtrl.SetGridLineColor(RGB(0xFC, 0xD7, 0x4F));
 	m_GridCtrl.SetColumnResize(TRUE);		// Column can resize.
 	m_GridCtrl.SetRowResize(TRUE);			// Row cannot resize.
-	m_GridCtrl.SetAutoSizeStyle(GVS_BOTH);	// Auto size
-	m_GridCtrl.SetEditable(FALSE);			// Cannot edit	
+	m_GridCtrl.SetAutoSizeStyle(GVS_BOTH);	// Auto size.
+	m_GridCtrl.SetEditable(FALSE);			// Cannot edit.
+	// TODO: color related. // m_GridCtrl.SetBkColor(RGB(0xFF, 0xFF, 0xFF)); 
 
 	OnMenuHoldRecord();						// Query hold record when startup.
-
-	//m_GridCtrl.ShowWindow(SW_HIDE);		// If no data, make grid invisible.
-
 	return TRUE;  // 除非将焦点设置到控件，否则返回 TRUE
 }
 
