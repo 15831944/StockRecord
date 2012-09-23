@@ -77,6 +77,7 @@ public:
 	CString hold_cost;
 	CString hold_amount;
 	CString even_price;
+	CString buy_date;
 };
 
 /**
@@ -94,8 +95,9 @@ public:
 	CString buy_price;
 	CString sell_price;
 	CString sell_amount;
-	CString sell_date;
 	CString even_price;
+	CString buy_date;
+	CString sell_date;
 	CString each_earn;
 	CString total_earn;
 };

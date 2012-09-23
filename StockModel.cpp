@@ -94,14 +94,15 @@ InsertHoldRecord(sqlite3* db, const char* strTable, const CStockHoldModel& model
 	sql = sql
 		+ " BEGIN TRANSACTION; " 
 		+ " INSERT INTO " + strTable
-		+ " (code, name, buy_price, hold_cost, hold_amount, even_price) "
+		+ " (code, name, buy_price, hold_cost, hold_amount, even_price, buy_date) "
 		+ " VALUES( "
 		+ " \"" + (LPCTSTR)model.code + "\", "
 		+ " \"" + (LPCTSTR)model.name + "\", "
 		+ " \"" + (LPCTSTR)model.buy_price + "\", "
 		+ " \"" + (LPCTSTR)model.hold_cost + "\", "
 		+ " \"" + (LPCTSTR)model.hold_amount + "\", "
-		+ " \"" + (LPCTSTR)model.even_price + "\" "
+		+ " \"" + (LPCTSTR)model.even_price + "\", "
+		+ "date(\"" + (LPCTSTR)model.buy_date + "\")"
 		+ " ); "
 		+ " END TRANSACTION; ";
 
@@ -145,7 +146,8 @@ UpdateHoldRecord( sqlite3* db, const char* strTable, const CStockHoldModel& mode
 		+ " buy_price = " + "\"" + (LPCTSTR)model.buy_price + "\", "
 		+ " hold_cost = " + "\"" + (LPCTSTR)model.hold_cost + "\", "
 		+ " hold_amount = " + "\"" + (LPCTSTR)model.hold_amount + "\", "
-		+ " even_price = " + "\"" + (LPCTSTR)model.even_price + "\" "
+		+ " even_price = " + "\"" + (LPCTSTR)model.even_price + "\", "
+		+ " buy_date = " + "date(\"" + (LPCTSTR)model.buy_date + "\")"
 		+ " WHERE id = " + idStr + "; "
 		+ " END TRANSACTION; ";
 	
@@ -184,6 +186,7 @@ int StockHoldCallback( void* para, int nCol, char** colValue, char** colName )
 	pModel->hold_cost.Format("%s", (!colValue[4] ? "" : colValue[4]));
 	pModel->hold_amount.Format("%s", (!colValue[5] ? "" : colValue[5]));
 	pModel->even_price.Format("%s", (!colValue[6] ? "" : colValue[6]));
+	pModel->buy_date.Format("%s", (!colValue[7] ? "" : colValue[7]));
 	pModel->SetEncodeStyle(ENCODE_STYLE_UTF8);
 
 	return OK;
@@ -273,15 +276,16 @@ int InsertSellRecord( sqlite3* db, const char* strTable, const CStockSellModel& 
 		+ " BEGIN TRANSACTION; " 
 		+ " INSERT INTO " + strTable
 		+ " (code, name, buy_price, sell_price, sell_amount, "
-		+ " sell_date, even_price, each_earn, total_earn) "
+		+ " even_price, buy_date, sell_date, each_earn, total_earn) "
 		+ " VALUES( "
 		+ " \"" + (LPCTSTR)model.code + "\", "
 		+ " \"" + (LPCTSTR)model.name + "\", "
 		+ " \"" + (LPCTSTR)model.buy_price + "\", "
 		+ " \"" + (LPCTSTR)model.sell_price + "\", "
 		+ " \"" + (LPCTSTR)model.sell_amount + "\", "
-		+ " date(\"" + (LPCTSTR)model.sell_date + "\"), "
 		+ " \"" + (LPCTSTR)model.even_price + "\", "
+		+ " date(\"" + (LPCTSTR)model.buy_date + "\"), "
+		+ " date(\"" + (LPCTSTR)model.sell_date + "\"), "
 		+ " \"" + (LPCTSTR)model.each_earn + "\", "
 		+ " \"" + (LPCTSTR)model.total_earn  + "\" "
 		+ " ); "
@@ -443,6 +447,7 @@ CStockHoldModel::CStockHoldModel( void )
 	, hold_cost(_T(""))
 	, hold_amount(_T(""))
 	, even_price(_T(""))
+	, buy_date(_T(""))
 {
 }
 
@@ -462,6 +467,7 @@ CStockSellModel::CStockSellModel( void )
 	, even_price(_T(""))
 	, each_earn(_T(""))
 	, total_earn(_T(""))
+	, buy_date(_T(""))
 {
 
 }

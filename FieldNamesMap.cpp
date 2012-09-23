@@ -31,12 +31,12 @@ int FieldNamesMap::InitFieldNamesMap( void )
 
 	m_FieldNamesMap["sell_price"]	=	"卖出价格";
 	m_FieldNamesMap["sell_amount"]	=	"卖出数量";
-	m_FieldNamesMap["sell_date"]	=	"卖出时间";
+	m_FieldNamesMap["sell_date"]	=	"卖出日期";
 	m_FieldNamesMap["each_earn"]	=	"每次盈利";
 	m_FieldNamesMap["total_earn"]	=	"总体盈利";
 
 	m_FieldNamesMap["each_money"]	=	"输入/输出金额";
-	m_FieldNamesMap["money_date"]	=	"输入/输出时间";
+	m_FieldNamesMap["money_date"]	=	"输入/输出日期";
 	m_FieldNamesMap["remark"]		=	"资金备注";
 	m_FieldNamesMap["total_money"]	=	"全部资金";
 

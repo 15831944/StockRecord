@@ -351,8 +351,12 @@ int CStockRecordDlg::SetGirdData( int nRowCount, int nColCount, char** result )
 		CSize sz;
 		CClientDC dc(this);
 		sz = dc.GetTextExtent(strOutName.c_str(), strOutName.length());
-		if (sz.cx > 0)
-			m_GridCtrl.SetColumnWidth(colIdx, (int)sz.cx + 3);
+		int columnLen = sz.cx;
+
+		if (string::npos != strOutName.find("日期") || 
+			string::npos != strOutName.find("date"))
+			columnLen += 7;	/* buy_date & sell_date columns have wider width. */
+		m_GridCtrl.SetColumnWidth(colIdx, columnLen - 5);
 	}
 
 	/**
@@ -607,7 +611,8 @@ int CStockRecordDlg::InitDatabaseTables( void )
 		+ "		buy_price	FLOAT, "
 		+ "		hold_cost	FLOAT, "
 		+ "		hold_amount	INTEGER, "
-		+ "		even_price	FLOAT "
+		+ "		even_price	FLOAT, "
+		+ "		buy_date	DATE "
 		+ ")";
 	ret = sqlite3_exec(m_pDatabase, sql.c_str(), NULL, NULL, &errmsg);
 	if (ret != SQLITE_OK) {
@@ -634,8 +639,9 @@ int CStockRecordDlg::InitDatabaseTables( void )
 		+ "		buy_price	FLOAT, "
 		+ "		sell_price	FLOAT, "
 		+ "		sell_amount	INTEGER, "
-		+ "		sell_date	DATE, "
 		+ "		even_price	FLOAT, "
+		+ "		buy_date	DATE, "
+		+ "		sell_date	DATE, "
 		+ "		each_earn	FLOAT, "
 		+ "		total_earn	FLOAT "
 		+ ")";
@@ -1141,7 +1147,7 @@ CStockRecordDlg::ConvertDlgDataToBuyModel( const CStockBuyDlg& buyDlg )
 }
 
 CStockHoldModel 
-CStockRecordDlg::ConvertBuyModelToHoldModel( const CStockBuyModel& buyModel)
+CStockRecordDlg::ConvertBuyModelToHoldModel( const CStockBuyModel& buyModel )
 {
 	/* Checkout whether the stock(code) is already in stock_hold.
 	 * If no same stock in table stock_hold, then the returned object
@@ -1163,6 +1169,7 @@ CStockRecordDlg::ConvertBuyModelToHoldModel( const CStockBuyModel& buyModel)
  	holdModel.code = buyModel.code;
  	holdModel.name = buyModel.name;
 	holdModel.buy_price = buyModel.buy_price;
+	holdModel.buy_date = buyModel.buy_date;
 
 	CStockFees stockFees;
 	float fBuyPrice = (float)atof((LPCTSTR)buyModel.buy_price);
@@ -1216,6 +1223,7 @@ CStockRecordDlg::ConvertToSellModel( const CStockHoldModel& holdModel,
 	sellModel.even_price = holdModel.even_price;
 	sellModel.sell_price.Format("%.2f", sellDlg.m_fSellPrice);
 	sellModel.sell_amount.Format("%d", sellDlg.m_nSellAmount);
+	sellModel.buy_date = holdModel.buy_date;
 	sellModel.sell_date = ConvertOleDateTimeToDateStr(sellDlg.m_oleSellDate);
 
 	/* Calculate each earn according to input from dialog. */
