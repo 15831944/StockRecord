@@ -26,6 +26,7 @@ CStockSellDlg::CStockSellDlg(CWnd* pParent /*=NULL*/)
 	, m_strEarnPrice(_T(""))
 	, m_strLossPrice(_T(""))
 	, m_bIsPlanSell(false)
+	, m_strWndTitle(_T(""))
 {
 }
 
@@ -155,11 +156,17 @@ void CStockSellDlg::OnShowWindow(BOOL bShow, UINT nStatus)
 
 	/* Disable "Sell" button if m_bIsPlanSell is true. */
 	if (m_bIsPlanSell) {
-		m_bIsPlanSell = false;/* Make it be false regardless of its origin value. */
+		m_strWndTitle = _T("计划卖出");
 		CButton* pButton = (CButton*)GetDlgItem(IDOK);
 		if (pButton)
 			pButton->EnableWindow(FALSE);
+
+		m_bIsPlanSell = false;/* Make it be false regardless of its origin value. */
+	} else {
+		m_strWndTitle = _T("卖出股票");
 	}
+
+	SetWindowText((LPCTSTR)m_strWndTitle);
 }
 
 /**
@@ -179,7 +186,6 @@ float CStockSellDlg::GetThresholdPriceFromCString( CString strPercent )
 	return fPrice;
 }
 
-
 void CStockSellDlg::OnSelchangeComboEarn()
 {
 	CString strComboEarn;
@@ -189,7 +195,6 @@ void CStockSellDlg::OnSelchangeComboEarn()
 
 	UpdateData(FALSE);
 }
-
 
 void CStockSellDlg::OnSelchangeComboLoss()
 {

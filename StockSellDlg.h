@@ -61,6 +61,7 @@ private:
 	 * "Sell" button in OnShowWindow() function before dlg is displayed.
 	 */
 	bool m_bIsPlanSell;
+	CString m_strWndTitle;
 
 public:
 	void SetHoldAmount(int holdAmount)	{m_nHoldAmount = holdAmount;}

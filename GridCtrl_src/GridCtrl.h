@@ -237,7 +237,8 @@ public:
 /* 颜色 */
 	// 设置和获取背景颜色，设置和获取行颜色
 	/* Added by XIN LONG */
-	void SetNonFixedRowBkColor(int rowIdx, COLORREF clr );
+	void SetRowBkClrWithoutFixedCells(int rowIdx, COLORREF clr );
+	void SetColumnTextClrWithoutFixedCells(int colIdx, COLORREF clr);
 
     void     SetGridBkColor(COLORREF clr)         { m_crGridBkColour = clr;           }
     COLORREF GetGridBkColor() const               { return m_crGridBkColour;          }

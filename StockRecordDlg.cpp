@@ -153,6 +153,7 @@ BOOL CStockRecordDlg::OnInitDialog()
 	m_GridCtrl.SetRowResize(TRUE);			// Row cannot resize.
 	m_GridCtrl.SetAutoSizeStyle(GVS_BOTH);	// Auto size.
 	m_GridCtrl.SetEditable(FALSE);			// Cannot edit.
+	m_GridCtrl.EnableDragAndDrop(FALSE);
 	// TODO: color related. // m_GridCtrl.SetBkColor(RGB(0xFF, 0xFF, 0xFF)); 
 
 	OnMenuHoldRecord();						// Query hold record when startup.
@@ -325,7 +326,7 @@ int CStockRecordDlg::SetGirdData( int nRowCount, int nColCount, char** result )
 	/* Clear corresponding m_vecStock*Ids to prepare to make a new display. */
 	ClearRecordIds();
 
-	/* 1. Show name of fields, before 'nCol' of result. */
+	/* 1. Show name & set width of fields, before 'nCol' of result. */
 	for (int colIdx = 0; colIdx < nColCount; ++colIdx) {
 				
 		char* data = result[colIdx];
@@ -338,10 +339,14 @@ int CStockRecordDlg::SetGirdData( int nRowCount, int nColCount, char** result )
 			continue;
 		}
 
-		/*  1.2 Show field names. Convert English field name to Chinese name. */
+		/*  1.2.0 Show field names. Convert English field name to Chinese name. */
 		string strOutName("");
 		strOutName = FieldNamesMap::GetChNameByEnName(data);
 		m_GridCtrl.SetItemText(0, colIdx, strOutName.c_str());
+		if (string::npos != strOutName.find(_T("保本价格"))
+			&& m_enumRecordTable == T_STOCKHOLD) {// Red color text in even price
+			m_GridCtrl.SetColumnTextClrWithoutFixedCells(colIdx, RGB(0xFF, 0x00, 0x00));
+		}
 
 		/**
 		 *	1.2.1 Set gird's column's width according strOutName's width.
@@ -352,11 +357,15 @@ int CStockRecordDlg::SetGirdData( int nRowCount, int nColCount, char** result )
 		sz = dc.GetTextExtent(strOutName.c_str(), strOutName.length());
 		int columnLen = sz.cx;
 
-		if (string::npos != strOutName.find("日期") || 
-			string::npos != strOutName.find("date"))
-			columnLen += 7;	/* buy_date & sell_date columns have wider width. */
+		if (string::npos != strOutName.find(_T("日期")) || 
+			string::npos != strOutName.find(_T("date")))
+			columnLen += 10;	/* buy_date & sell_date columns have wider width. */
 		m_GridCtrl.SetColumnWidth(colIdx, columnLen - 5);
 	}
+	CRect gridWndRect, dlgWndRect;
+	m_GridCtrl.GetWindowRect(&gridWndRect);
+	GetWindowRect(&dlgWndRect);
+	//SetWindowPos(NULL, 0, 0, 300, 400, SWP_NOZORDER | SWP_NOMOVE);
 
 	/**
 	 *	2. Show data, data is starting from 'nCol' of 'result'.
@@ -365,8 +374,8 @@ int CStockRecordDlg::SetGirdData( int nRowCount, int nColCount, char** result )
 	 */
 	int seqNo = 1;					// sqe_no is started from 1.
 	for (int rowIdx = 1; rowIdx < nRowCount + 1; ++rowIdx) {
-		if (rowIdx % 2 == 0)	// Set row background color.
-			m_GridCtrl.SetNonFixedRowBkColor(rowIdx, RGB(0xBC, 0xC7, 0xD8));
+		if (rowIdx % 2 == 0)		// Set row background color.
+			m_GridCtrl.SetRowBkClrWithoutFixedCells(rowIdx, RGB(0xBC, 0xC7, 0xD8));
 		for (int colIdx = 0; colIdx < nColCount; ++colIdx) {
 
 			/* 2.1 Display 'seqNo' in col 0, instead of 'id'. */
@@ -1168,7 +1177,8 @@ CStockRecordDlg::ConvertBuyModelToHoldModel( const CStockBuyModel& buyModel )
 	CStockHoldModel holdModel;
 	holdModel = SelectHoldRecordByCode(m_pDatabase, 
 		m_StrHoldTableName.c_str(), (LPCTSTR)buyModel.code);
-	bool isHoldTableHasSameStock = !(holdModel.code.IsEmpty());
+	/* If stock_hold doesn't have the same record, its id is -1. */
+	bool isHoldTableHasSameStock = holdModel.id <= 0 ? false : true;
 	
 	/* The first 3 fields will be written by data from buyModel, 
 	 * no matter whether the stock exists in stock_hold table.
@@ -1212,8 +1222,8 @@ CStockRecordDlg::ConvertBuyModelToHoldModel( const CStockBuyModel& buyModel )
 	} 
 
 	holdModel.hold_amount.Format("%d", nNewHoldAmount);
-	holdModel.hold_cost.Format("%.3f", fNewHoldCost);
-	holdModel.even_price.Format("%.2f", fEvenPrice);
+	holdModel.hold_cost.Format("%.3f", Round(fNewHoldCost, 3));
+	holdModel.even_price.Format("%.2f", Round(fEvenPrice, 2));
 
 	holdModel.SetEncodeStyle(buyModel.GetEncodeStyle()); // for name
 	return holdModel;
@@ -1247,7 +1257,6 @@ CStockRecordDlg::ConvertToSellModel( const CStockHoldModel& holdModel,
 	
 	return sellModel;
 }
-
 
 void CStockRecordDlg::MakeMenuItemCheckedByActiveTable(void)
 {

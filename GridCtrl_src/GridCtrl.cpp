@@ -7585,12 +7585,20 @@ void CGridCtrl::Reorder(int From, int To)
 /**
  *	Set Non fixed row color, also pass the fixed cells in the row.
  */
-void CGridCtrl::SetNonFixedRowBkColor(int rowIdx, COLORREF clr )
+void CGridCtrl::SetRowBkClrWithoutFixedCells(int rowIdx, COLORREF clr )
 {
 	if (rowIdx > GetRowCount())
 		return;
 
-	for (int colIdx = GetFixedColumnCount(); colIdx < GetColumnCount(); ++colIdx) {
+	for (int colIdx = GetFixedColumnCount(); colIdx < GetColumnCount(); ++colIdx)
 		SetItemBkColour(rowIdx, colIdx, clr);
-	}
+}
+
+void CGridCtrl::SetColumnTextClrWithoutFixedCells( int colIdx, COLORREF clr )
+{
+	if (colIdx > GetColumnCount())
+		return ;
+
+	for (int rowIdx = GetFixedRowCount(); rowIdx < GetRowCount(); ++rowIdx) 
+		GetCell(rowIdx, colIdx)->SetTextClr(clr);
 }
