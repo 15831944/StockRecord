@@ -97,6 +97,8 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <None Include="ReadMe.txt" />
+    <None Include="res\icon1.ico" />
+    <None Include="res\key.jpg" />
     <None Include="res\StockRecord.ico" />
     <None Include="res\StockRecord.rc2" />
   </ItemGroup>
@@ -124,6 +126,7 @@
     <ClInclude Include="StockModel.h" />
     <ClInclude Include="StockRecord.h" />
     <ClInclude Include="StockRecordDlg.h" />
+    <ClInclude Include="StockRecordLoginDlg.h" />
     <ClInclude Include="StockSellDlg.h" />
     <ClInclude Include="targetver.h" />
     <ClInclude Include="TrayIcon.h" />
@@ -151,6 +154,7 @@
     <ClCompile Include="StockModel.cpp" />
     <ClCompile Include="StockRecord.cpp" />
     <ClCompile Include="StockRecordDlg.cpp" />
+    <ClCompile Include="StockRecordLoginDlg.cpp" />
     <ClCompile Include="StockSellDlg.cpp" />
     <ClCompile Include="TrayIcon.cpp" />
   </ItemGroup>

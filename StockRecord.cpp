@@ -5,6 +5,7 @@
 #include "stdafx.h"
 #include "StockRecord.h"
 #include "StockRecordDlg.h"
+#include "StockRecordLoginDlg.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -74,6 +75,12 @@ BOOL CStockRecordApp::InitInstance()
 	// TODO: 应适当修改该字符串，
 	// 例如修改为公司或组织名
 	SetRegistryKey(_T("应用程序向导生成的本地应用程序"));
+
+	/* Add a login dialog before the main dialog is displayed. */
+	CStockRecordLoginDlg loginDlg;
+	if (loginDlg.DoModal() != IDOK) {
+		return FALSE;
+	}
 
 	CStockRecordDlg dlg;
 	m_pMainWnd = &dlg;

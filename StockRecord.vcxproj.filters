@@ -46,6 +46,12 @@
     <None Include="res\StockRecord.ico">
       <Filter>资源文件</Filter>
     </None>
+    <None Include="res\icon1.ico">
+      <Filter>资源文件</Filter>
+    </None>
+    <None Include="res\key.jpg">
+      <Filter>资源文件</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="StockRecord.h">
@@ -126,6 +132,9 @@
     <ClInclude Include="TrayIcon.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="StockRecordLoginDlg.h">
+      <Filter>头文件\Dialogs_Headers</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="StockRecord.cpp">
@@ -190,6 +199,9 @@
     </ClCompile>
     <ClCompile Include="TrayIcon.cpp">
       <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="StockRecordLoginDlg.cpp">
+      <Filter>源文件\Dialogs_Srcs</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
