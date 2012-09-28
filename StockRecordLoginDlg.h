@@ -17,6 +17,7 @@ public:
 protected:
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
 	virtual BOOL OnInitDialog();
+	virtual BOOL PreTranslateMessage(MSG* pMsg);
 	afx_msg void OnBnClickedOk();
 	afx_msg void OnBnClickedCancel();
 	DECLARE_MESSAGE_MAP()
@@ -34,7 +35,5 @@ private:
 	void SetUserName(CString userName)		{m_strUserName = userName;}
 	CString GetUserName(void)				{return m_strUserName;}
 	void SetPassword(CString password)		{m_strPassword = password;}
-	CString GetPassword(void)				{return m_strPassword;}
-public:
-	
+	CString GetPassword(void)				{return m_strPassword;}	
 };

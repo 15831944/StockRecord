@@ -5,10 +5,8 @@
 #pragma once
 
 #include "GridCtrl_src/GridCtrl.h"
-extern "C" {
-	#include <sqlite3.h>	// SQLite support.
-};
 
+#include "StockDBConnection.h"
 #include "StockModel.h"
 #include "StockBuyDlg.h"
 #include "StockSellDlg.h"
@@ -16,13 +14,6 @@ extern "C" {
 
 #include <vector>
 using namespace std;
-
-enum RECORDTABLE{		// which table is displayed now.
-	T_STOCKBUY = 0,		// stock_buy table
-	T_STOCKHOLD,		// stock_hold table
-	T_STOCKSELL,		// stock_sell table
-	T_STOCKMONEY		// stock_money table
-};
 
 // CStockRecordDlg ¶Ô»°¿ò
 class CStockRecordDlg : public CDialogEx
@@ -74,13 +65,10 @@ protected:
 	DECLARE_MESSAGE_MAP()
 
 private:
-	BOOL IsTableNamesValid(void);
 	void MakeMenuItemCheckedByActiveTable(void);
 
 	/** Get the left top item's data to display according opened table now */
 	void SetLeftTopItemData(void);
-
-	std::string GetActiveTableName(void);
 	int GetActiveRecordIdBySeqNo(int seqNo);
 
 	/** Check out if @cellRanged is valid */
@@ -91,18 +79,16 @@ private:
 	CString ConvertOleDateTimeToDateStr(const COleDateTime& datetime);
 
 	/* Return a real model, not model's reference. */
-	CStockBuyModel	 ConvertDlgDataToBuyModel(const CStockBuyDlg& buyDlg);
-	CStockHoldModel  ConvertBuyModelToHoldModel(const CStockBuyModel&);
-	CStockSellModel  
-	ConvertToSellModel(const CStockHoldModel&holdModel, const CStockSellDlg& sellDlg);
-	CStockMoneyModel ConvertDlgDataToMoneyModel();
+	CStockModelBuy	 ConvertDlgDataToBuyModel(const CStockBuyDlg& buyDlg);
+	CStockModelHold  ConvertBuyModelToHoldModel(const CStockModelBuy&);
+	CStockModelSell  ConvertToSellModel(const CStockModelHold&holdModel, 
+										const CStockSellDlg& sellDlg);
+	CStockModelMoney ConvertDlgDataToMoneyModel();
 
 public:
 	/** Set gird with data queried from sqlite3_get_table(). */
-	int SetGirdData(int nRow, int nCol, char** result);
-
-	/** Read records from tables. */
-	int QueryRecordsByTableName(const char* tableName);
+	int GetAndShowTableData(ENUMACTIVETABLE whichTable);
+	int SetGridData(int nRow, int nCol, char** result);
 
 	/** Reload table records according to m_enumRecordTable */
 	int ReloadRecords(void);
@@ -110,33 +96,14 @@ public:
 	/** Set up database and tables' names, must be called at startup. */
 	int SetupDBTableNames(void);
 
-	/** Open database, if it doesn't exist, create & init database. */
-	int OpenDatabase(void);
-
-	/** Close database, must be called when dialog goes away. */
-	int CloseDatabase(void);
-
-	/** Initiate database's tables, should be called only once. */
-	int InitDatabaseTables(void);
-
 private:
 	
 	CGridCtrl m_GridCtrl;
+	CStockDBConnection m_dbConn;
 	CTrayIcon* m_pTrayIcon;
+
 	bool m_bIsWndHidden;
 	bool m_bIsPlanSell;
-
-	/** names of database and tables */
-	string	m_strDBName;
-	string	m_strBuyTableName;
-	string	m_StrHoldTableName;
-	string	m_strSellTableName;
-	string	m_strMoneyTableName;
-
-	sqlite3* m_pDatabase;
-	int		m_nDBStatus;
-
-	RECORDTABLE m_enumRecordTable;
 
 	/**
 	 *	Store table's ids, the seqNo is the index of vector.
@@ -156,6 +123,7 @@ private:
 	 *  This method may not be good, but it can work in this condition.
 	 */
 	void StoreRecordId(int id);
-public:
 	
+public:
+	afx_msg void OnMenuPlanbuy();
 };

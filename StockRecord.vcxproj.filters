@@ -135,6 +135,12 @@
     <ClInclude Include="StockRecordLoginDlg.h">
       <Filter>头文件\Dialogs_Headers</Filter>
     </ClInclude>
+    <ClInclude Include="StockDBConnection.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="StockPlanBuyDlg.h">
+      <Filter>头文件\Dialogs_Headers</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="StockRecord.cpp">
@@ -201,6 +207,12 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="StockRecordLoginDlg.cpp">
+      <Filter>源文件\Dialogs_Srcs</Filter>
+    </ClCompile>
+    <ClCompile Include="StockDBConnection.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="StockPlanBuyDlg.cpp">
       <Filter>源文件\Dialogs_Srcs</Filter>
     </ClCompile>
   </ItemGroup>

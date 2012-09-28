@@ -45,14 +45,15 @@ void CStockRecordLoginDlg::OnBnClickedOk()
 	
 	if (m_strInputUserName.IsEmpty() || m_strInputPassword.IsEmpty()) {
 		MessageBox("用户名/密码不能为空，请重新输入。", "Oops.");
+		CEdit* pEdit = (CEdit*)GetDlgItem(IDC_EDIT_USERNAME);
+		pEdit->SetSel(0, -1);
+		pEdit->SetFocus();
 		return ;
 	}
 
 	if (m_strInputUserName.Compare(GetUserName()) != 0 ||
 		m_strInputPassword.Compare(GetPassword()) != 0) {
-
 		MessageBox("用户名/密码不正确，请重新输入。", "Oops.");
-
 		CEdit* pEdit = (CEdit*)GetDlgItem(IDC_EDIT_USERNAME);
 		pEdit->SetSel(0, -1);
 		pEdit->SetFocus();
@@ -68,7 +69,6 @@ void CStockRecordLoginDlg::OnBnClickedCancel()
 	// Exit application.
 	CDialogEx::OnCancel();
 }
-
 
 BOOL CStockRecordLoginDlg::OnInitDialog()
 {
@@ -87,4 +87,30 @@ BOOL CStockRecordLoginDlg::OnInitDialog()
 	
 	// return TRUE unless you set the focus to a control
 	// EXCEPTION: OCX Property Pages should return FALSE
+}
+
+BOOL CStockRecordLoginDlg::PreTranslateMessage(MSG* pMsg)
+{
+	if (pMsg->message == WM_KEYDOWN) {
+		if(pMsg->wParam == VK_RETURN) {
+			UINT nID = GetFocus()->GetDlgCtrlID();
+			switch (nID) {
+			/* When enter is pressed, move the focus to password edit only if 
+			 * username edit is not empty.
+			 */
+			case IDC_EDIT_USERNAME:
+				UpdateData(TRUE);
+				if (!m_strInputUserName.IsEmpty() && m_strInputPassword.IsEmpty()) {
+					NextDlgCtrl();
+					return TRUE;
+				}
+				break;
+
+			default:
+				break;
+			}
+		}
+	}
+
+	return CDialogEx::PreTranslateMessage(pMsg);
 }

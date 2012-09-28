@@ -123,7 +123,9 @@
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="StockBuyDlg.h" />
     <ClInclude Include="StockCalculate.h" />
+    <ClInclude Include="StockDBConnection.h" />
     <ClInclude Include="StockModel.h" />
+    <ClInclude Include="StockPlanBuyDlg.h" />
     <ClInclude Include="StockRecord.h" />
     <ClInclude Include="StockRecordDlg.h" />
     <ClInclude Include="StockRecordLoginDlg.h" />
@@ -151,7 +153,9 @@
     </ClCompile>
     <ClCompile Include="StockBuyDlg.cpp" />
     <ClCompile Include="StockCalculate.cpp" />
+    <ClCompile Include="StockDBConnection.cpp" />
     <ClCompile Include="StockModel.cpp" />
+    <ClCompile Include="StockPlanBuyDlg.cpp" />
     <ClCompile Include="StockRecord.cpp" />
     <ClCompile Include="StockRecordDlg.cpp" />
     <ClCompile Include="StockRecordLoginDlg.cpp" />

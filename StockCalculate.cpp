@@ -93,7 +93,7 @@ float Round( float fValue, int precision, int roundway /*= ROUND_ZRBS*/ )
 {
 	switch (roundway) {
 	case ROUND_ZRBS:
-		return long(fValue * pow(10.0f, precision) + 0.9) / float(pow(10.0f, precision));
+		return long(fValue * pow(10.0f, precision) + 0.99f) / float(pow(10.0f, precision));
 		break;
 
 	case ROUND_ZSBR:
@@ -101,11 +101,11 @@ float Round( float fValue, int precision, int roundway /*= ROUND_ZRBS*/ )
 		break;
 
 	case ROUND_4S5R:
-		return long(fValue * pow(10.0f, precision) + 0.5) / float(pow(10.0f, precision));
+		return long(fValue * pow(10.0f, precision) + 0.59f) / float(pow(10.0f, precision));
 		break;
 
 	default:
-		return long(fValue * pow(10.0f, precision) + 0.5) / float(pow(10.0f, precision));
+		return long(fValue * pow(10.0f, precision) + 0.59f) / float(pow(10.0f, precision));
 		break;
 	}
 
