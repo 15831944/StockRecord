@@ -50,6 +50,7 @@ void CStockPlanBuyDlg::DoDataExchange(CDataExchange* pDX)
 BEGIN_MESSAGE_MAP(CStockPlanBuyDlg, CDialogEx)
 	ON_BN_CLICKED(IDOK, &CStockPlanBuyDlg::OnBnClickedOk)
 	ON_BN_CLICKED(IDCANCEL, &CStockPlanBuyDlg::OnBnClickedCancel)
+	ON_WM_SHOWWINDOW()
 END_MESSAGE_MAP()
 
 // CStockPlanBuyDlg message handlers
@@ -98,6 +99,11 @@ void CStockPlanBuyDlg::OnBnClickedOk()
 
 void CStockPlanBuyDlg::OnBnClickedCancel()
 {
+	/* Clear all the input & output of edits, if necessary. */
+	// m_sPlanBuyCode = _T("");
+	// ...
+	// UpdateData(FALSE);
+
 	CDialogEx::OnCancel();
 }
 
@@ -136,4 +142,14 @@ void CStockPlanBuyDlg::HandlePlanBuy( void )
 	m_fPlanBuyEvenPrice = Round(m_fPlanBuyEvenPrice, 2);
 
 	UpdateData(FALSE);
+}
+
+void CStockPlanBuyDlg::OnShowWindow(BOOL bShow, UINT nStatus)
+{
+	CDialogEx::OnShowWindow(bShow, nStatus);
+
+	/* Make the plan buy code edit focused */
+	CEdit* pEdit = (CEdit*)GetDlgItem(IDC_EDIT_PLANBUY_CODE);
+	pEdit->SetSel(0, -1);
+	pEdit->SetFocus();
 }

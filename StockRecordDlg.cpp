@@ -10,10 +10,6 @@
 #include "FieldNamesMap.h"
 #include "StockCalculate.h"
 
-#include "Dialogs_Src/StockPlanBuyDlg.h"
-
-// #include "StockBuyDlg.h"
-
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif
@@ -67,6 +63,7 @@ CStockRecordDlg::CStockRecordDlg(CWnd* pParent /*=NULL*/)
 	, m_pTrayIcon(NULL)
 	, m_bIsWndHidden(false)
 	, m_bIsPlanSell(false)
+	, m_pPlanBuyDlg(NULL)
 {
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
 }
@@ -75,6 +72,9 @@ CStockRecordDlg::~CStockRecordDlg(void)
 {
 	delete(m_pTrayIcon);
 	m_pTrayIcon = NULL;
+
+	delete m_pPlanBuyDlg;
+	m_pPlanBuyDlg = NULL;
 }
 
 void CStockRecordDlg::DoDataExchange(CDataExchange* pDX)
@@ -531,7 +531,7 @@ void CStockRecordDlg::OnGridRClick( NMHDR *pNotifyStruct, LRESULT* pResult )
 	switch (m_dbConn.GetActiveTable()) {
 	case ACTIVE_TABLE_BUY:
 		popupMenu = menu.GetSubMenu(0);
-		if (!isRClickOnDataCell) 	// TODO: wait to BE reviewed.
+		if (!isRClickOnDataCell)
 			popupMenu->DeleteMenu(IDM_STOCKBUY_REMOVE, MF_BYCOMMAND);
 		break;
 
@@ -842,7 +842,6 @@ void CStockRecordDlg::OnStockmoneyInout()
 {
 }
 
-
 CString CStockRecordDlg::ConvertOleDateTimeToDateStr( const COleDateTime& datetime )
 {
 	/* Make sure the date format is: YYYY-MM-DD. */
@@ -1131,6 +1130,13 @@ BOOL CStockRecordDlg::PreTranslateMessage(MSG* pMsg)
 			}
 			break;
 
+		case 0x50:	/* P + CONTROL will active plan_buy dialog. */
+			if (GetAsyncKeyState(VK_CONTROL) & 0x8000) {
+				OnMenuPlanbuy();
+				return TRUE;
+			}
+			break;
+
 		default:
 			break;
 		}
@@ -1139,9 +1145,17 @@ BOOL CStockRecordDlg::PreTranslateMessage(MSG* pMsg)
 	return CDialogEx::PreTranslateMessage(pMsg);
 }
 
+/* Plan buy dialog is a non-modal dialog, it is created dynamically. */
 void CStockRecordDlg::OnMenuPlanbuy()
 {
-	CStockPlanBuyDlg planBuyDlg;
-	planBuyDlg.SetDBConnection(&m_dbConn);
-	planBuyDlg.DoModal();
+	if (!m_pPlanBuyDlg) {
+		/* plan dialog has not been created. */
+		m_pPlanBuyDlg = new CStockPlanBuyDlg();
+		if (!m_pPlanBuyDlg)
+			return ;
+		m_pPlanBuyDlg->SetDBConnection(&m_dbConn);
+		m_pPlanBuyDlg->Create(IDD_PLANBUY_DLG, this);
+	}
+
+	m_pPlanBuyDlg->ShowWindow(SW_SHOW);
 }

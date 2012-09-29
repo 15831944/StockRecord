@@ -10,6 +10,7 @@
 #include "StockModel.h"
 #include "Dialogs_Src/StockBuyDlg.h"
 #include "Dialogs_Src/StockSellDlg.h"
+#include "Dialogs_Src/StockPlanBuyDlg.h"
 #include "TrayIcon.h"
 
 #include <vector>
@@ -96,11 +97,11 @@ public:
 	/** Set up database and tables' names, must be called at startup. */
 	int SetupDBTableNames(void);
 
-private:
-	
+private:	
 	CGridCtrl m_GridCtrl;
 	CStockDBConnection m_dbConn;
 	CTrayIcon* m_pTrayIcon;
+	CStockPlanBuyDlg* m_pPlanBuyDlg;
 
 	bool m_bIsWndHidden;
 	bool m_bIsPlanSell;
