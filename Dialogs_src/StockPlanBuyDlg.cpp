@@ -2,13 +2,13 @@
 //
 
 #include "stdafx.h"
-#include "StockRecord.h"
+#include "../StockRecord.h"
 #include "StockPlanBuyDlg.h"
 #include "afxdialogex.h"
 
-#include "StockModel.h"
-#include "StockDBConnection.h"
-#include "StockCalculate.h"
+#include "../StockModel.h"
+#include "../StockDBConnection.h"
+#include "../StockCalculate.h"
 
 
 // CStockPlanBuyDlg dialog

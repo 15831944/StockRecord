@@ -104,6 +104,10 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ChineseCodeLib.h" />
+    <ClInclude Include="Dialogs_src\StockBuyDlg.h" />
+    <ClInclude Include="Dialogs_src\StockPlanBuyDlg.h" />
+    <ClInclude Include="Dialogs_src\StockRecordLoginDlg.h" />
+    <ClInclude Include="Dialogs_src\StockSellDlg.h" />
     <ClInclude Include="ErrorCode.h" />
     <ClInclude Include="FieldNamesMap.h" />
     <ClInclude Include="GridCtrl_src\CellRange.h" />
@@ -121,20 +125,20 @@
     <ClInclude Include="NewCellTypes\GridURLCell.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="stdafx.h" />
-    <ClInclude Include="StockBuyDlg.h" />
     <ClInclude Include="StockCalculate.h" />
     <ClInclude Include="StockDBConnection.h" />
     <ClInclude Include="StockModel.h" />
-    <ClInclude Include="StockPlanBuyDlg.h" />
     <ClInclude Include="StockRecord.h" />
     <ClInclude Include="StockRecordDlg.h" />
-    <ClInclude Include="StockRecordLoginDlg.h" />
-    <ClInclude Include="StockSellDlg.h" />
     <ClInclude Include="targetver.h" />
     <ClInclude Include="TrayIcon.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ChineseCodeLib.cpp" />
+    <ClCompile Include="Dialogs_src\StockBuyDlg.cpp" />
+    <ClCompile Include="Dialogs_src\StockPlanBuyDlg.cpp" />
+    <ClCompile Include="Dialogs_src\StockRecordLoginDlg.cpp" />
+    <ClCompile Include="Dialogs_src\StockSellDlg.cpp" />
     <ClCompile Include="FieldNamesMap.cpp" />
     <ClCompile Include="GridCtrl_src\GridCell.cpp" />
     <ClCompile Include="GridCtrl_src\GridCellBase.cpp" />
@@ -151,15 +155,11 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="StockBuyDlg.cpp" />
     <ClCompile Include="StockCalculate.cpp" />
     <ClCompile Include="StockDBConnection.cpp" />
     <ClCompile Include="StockModel.cpp" />
-    <ClCompile Include="StockPlanBuyDlg.cpp" />
     <ClCompile Include="StockRecord.cpp" />
     <ClCompile Include="StockRecordDlg.cpp" />
-    <ClCompile Include="StockRecordLoginDlg.cpp" />
-    <ClCompile Include="StockSellDlg.cpp" />
     <ClCompile Include="TrayIcon.cpp" />
   </ItemGroup>
   <ItemGroup>

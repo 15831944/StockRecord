@@ -8,8 +8,8 @@
 
 #include "StockDBConnection.h"
 #include "StockModel.h"
-#include "StockBuyDlg.h"
-#include "StockSellDlg.h"
+#include "Dialogs_Src/StockBuyDlg.h"
+#include "Dialogs_Src/StockSellDlg.h"
 #include "TrayIcon.h"
 
 #include <vector>

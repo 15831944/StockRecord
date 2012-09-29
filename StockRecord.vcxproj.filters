@@ -25,17 +25,17 @@
     <Filter Include="源文件\New Cell Srcs">
       <UniqueIdentifier>{85c6021d-a55a-43b2-a272-f020285d6056}</UniqueIdentifier>
     </Filter>
-    <Filter Include="头文件\Dialogs_Headers">
-      <UniqueIdentifier>{813a79bc-565d-46ab-ae0d-3e89077a78b4}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="源文件\Dialogs_Srcs">
-      <UniqueIdentifier>{4590e7a9-b316-4f29-9fc3-396e5f19f62a}</UniqueIdentifier>
-    </Filter>
     <Filter Include="头文件\Utility_Headers">
       <UniqueIdentifier>{691af4d8-148d-4aae-999a-bdfbf66f6c81}</UniqueIdentifier>
     </Filter>
     <Filter Include="源文件\Utility_Srcs">
       <UniqueIdentifier>{68e324cc-236b-49a6-965f-b53bcd78212b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="头文件\Dialogs_Headers">
+      <UniqueIdentifier>{5035418b-f2b2-4989-9a5e-887053f86ff4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="源文件\Dalogs_Srcs">
+      <UniqueIdentifier>{53f658b1-d8a2-4eee-a114-17be7232ac33}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -117,12 +117,6 @@
     <ClInclude Include="StockCalculate.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="StockBuyDlg.h">
-      <Filter>头文件\Dialogs_Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="StockSellDlg.h">
-      <Filter>头文件\Dialogs_Headers</Filter>
-    </ClInclude>
     <ClInclude Include="ChineseCodeLib.h">
       <Filter>头文件\Utility_Headers</Filter>
     </ClInclude>
@@ -132,13 +126,19 @@
     <ClInclude Include="TrayIcon.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="StockRecordLoginDlg.h">
-      <Filter>头文件\Dialogs_Headers</Filter>
-    </ClInclude>
     <ClInclude Include="StockDBConnection.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="StockPlanBuyDlg.h">
+    <ClInclude Include="Dialogs_src\StockBuyDlg.h">
+      <Filter>头文件\Dialogs_Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Dialogs_src\StockPlanBuyDlg.h">
+      <Filter>头文件\Dialogs_Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Dialogs_src\StockRecordLoginDlg.h">
+      <Filter>头文件\Dialogs_Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Dialogs_src\StockSellDlg.h">
       <Filter>头文件\Dialogs_Headers</Filter>
     </ClInclude>
   </ItemGroup>
@@ -191,12 +191,6 @@
     <ClCompile Include="StockCalculate.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="StockBuyDlg.cpp">
-      <Filter>源文件\Dialogs_Srcs</Filter>
-    </ClCompile>
-    <ClCompile Include="StockSellDlg.cpp">
-      <Filter>源文件\Dialogs_Srcs</Filter>
-    </ClCompile>
     <ClCompile Include="ChineseCodeLib.cpp">
       <Filter>源文件\Utility_Srcs</Filter>
     </ClCompile>
@@ -206,14 +200,20 @@
     <ClCompile Include="TrayIcon.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="StockRecordLoginDlg.cpp">
-      <Filter>源文件\Dialogs_Srcs</Filter>
-    </ClCompile>
     <ClCompile Include="StockDBConnection.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="StockPlanBuyDlg.cpp">
-      <Filter>源文件\Dialogs_Srcs</Filter>
+    <ClCompile Include="Dialogs_src\StockBuyDlg.cpp">
+      <Filter>源文件\Dalogs_Srcs</Filter>
+    </ClCompile>
+    <ClCompile Include="Dialogs_src\StockPlanBuyDlg.cpp">
+      <Filter>源文件\Dalogs_Srcs</Filter>
+    </ClCompile>
+    <ClCompile Include="Dialogs_src\StockRecordLoginDlg.cpp">
+      <Filter>源文件\Dalogs_Srcs</Filter>
+    </ClCompile>
+    <ClCompile Include="Dialogs_src\StockSellDlg.cpp">
+      <Filter>源文件\Dalogs_Srcs</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

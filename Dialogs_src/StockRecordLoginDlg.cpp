@@ -2,7 +2,7 @@
 //
 
 #include "stdafx.h"
-#include "StockRecord.h"
+#include "../StockRecord.h"
 #include "StockRecordLoginDlg.h"
 #include "afxdialogex.h"
 

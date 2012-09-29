@@ -2,11 +2,11 @@
 //
 
 #include "stdafx.h"
-#include "StockRecord.h"
-#include "StockSellDlg.h"
+#include "../StockRecord.h"
+#include "./StockSellDlg.h"
 #include "afxdialogex.h"
 
-#include "StockCalculate.h"
+#include "../StockCalculate.h"
 
 // CStockSellDlg ¶Ô»°¿ò
 

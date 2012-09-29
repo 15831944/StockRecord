@@ -10,7 +10,7 @@
 #include "FieldNamesMap.h"
 #include "StockCalculate.h"
 
-#include "StockPlanBuyDlg.h"
+#include "Dialogs_Src/StockPlanBuyDlg.h"
 
 // #include "StockBuyDlg.h"
 

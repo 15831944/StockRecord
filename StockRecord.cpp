@@ -5,7 +5,7 @@
 #include "stdafx.h"
 #include "StockRecord.h"
 #include "StockRecordDlg.h"
-#include "StockRecordLoginDlg.h"
+#include "Dialogs_Src/StockRecordLoginDlg.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
