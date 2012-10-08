@@ -1,6 +1,7 @@
 #pragma once
 #include "atlcomtime.h"
 #include "afxwin.h"
+//#include "../UtilityEdit.h"
 
 // CStockSellDlg 对话框
 
@@ -18,6 +19,7 @@ public:
 protected:
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV 支持
 	virtual BOOL OnInitDialog();
+	afx_msg void OnLButtonDblClk(UINT nFlags, CPoint point);
 	afx_msg void OnShowWindow(BOOL bShow, UINT nStatus);
 	afx_msg void OnBnClickedOk();
 	afx_msg void OnBnClickedBtCalcuEarn();
@@ -38,9 +40,10 @@ private:
 
 	CString m_strEachEarn;
 	CComboBox m_comboEarn;
-	CString m_strEarnPrice;
 	CComboBox m_comboLoss;
+	CString m_strEarnPrice;
 	CString m_strLossPrice;
+
 public:
 	float GetThresholdPriceFromCString(CString str);
 	

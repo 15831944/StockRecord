@@ -111,6 +111,7 @@ BEGIN_MESSAGE_MAP(CStockRecordDlg, CDialogEx)
 	ON_COMMAND(ID_MENU_TRAYICON_SHOWWD, &CStockRecordDlg::OnMenuTrayiconShowwd)
 	ON_COMMAND(ID_MENU_TRAYICON_EXIT, &CStockRecordDlg::OnMenuTrayiconExit)
 	ON_COMMAND(ID_MENU_PLANBUY, &CStockRecordDlg::OnMenuPlanbuy)
+	ON_COMMAND(IDM_STOCKHOLD_PLANBUY, &CStockRecordDlg::OnStockholdPlanbuy)
 END_MESSAGE_MAP()
 
 // CStockRecordDlg 消息处理程序
@@ -1157,5 +1158,30 @@ void CStockRecordDlg::OnMenuPlanbuy()
 		m_pPlanBuyDlg->Create(IDD_PLANBUY_DLG, this);
 	}
 
+	m_pPlanBuyDlg->SetCode("");
+	m_pPlanBuyDlg->SetBuyAmount(0);
+	m_pPlanBuyDlg->ShowWindow(SW_SHOW);
+}
+
+void CStockRecordDlg::OnStockholdPlanbuy()
+{
+	/* 1. Query the hold record according to the focused cell's row. */
+	int id = GetActiveRecordIdBySeqNo(m_GridCtrl.GetFocusCell().row);
+	CStockModelHold holdModel = m_dbConn.SelectHoldModelById(id);
+	if (holdModel.GetEncodeStyle() == ENCODE_STYLE_UTF8)
+		holdModel.ConvertEncodeFormat(ENCODE_STYLE_GB2312);
+
+	/* Only one plan buy dialog can be shown at the same time. */
+	if (!m_pPlanBuyDlg) {
+		/* plan dialog has not been created. */
+		m_pPlanBuyDlg = new CStockPlanBuyDlg();
+		if (!m_pPlanBuyDlg)
+			return ;
+		m_pPlanBuyDlg->SetDBConnection(&m_dbConn);
+		m_pPlanBuyDlg->Create(IDD_PLANBUY_DLG, this);
+	}
+
+	m_pPlanBuyDlg->SetCode(holdModel.code);
+	m_pPlanBuyDlg->SetBuyAmount(atoi((LPCTSTR)holdModel.hold_amount));
 	m_pPlanBuyDlg->ShowWindow(SW_SHOW);
 }

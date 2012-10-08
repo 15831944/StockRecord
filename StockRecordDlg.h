@@ -63,6 +63,8 @@ protected:
 	afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
 	afx_msg void OnMenuTrayiconShowwd();
 	afx_msg void OnMenuTrayiconExit();
+	afx_msg void OnMenuPlanbuy();
+	afx_msg void OnStockholdPlanbuy();
 	DECLARE_MESSAGE_MAP()
 
 private:
@@ -125,6 +127,5 @@ private:
 	 */
 	void StoreRecordId(int id);
 	
-public:
-	afx_msg void OnMenuPlanbuy();
+
 };

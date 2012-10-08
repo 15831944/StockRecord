@@ -1,12 +1,8 @@
-// StockSellDlg.cpp : 实现文件
-//
-
-#include "stdafx.h"
-#include "../StockRecord.h"
-#include "./StockSellDlg.h"
+#include "StdAfx.h"
+#include "..\StockRecord.h"
+#include "StockSellDlg.h"
 #include "afxdialogex.h"
-
-#include "../StockCalculate.h"
+#include "..\StockCalculate.h"
 
 // CStockSellDlg 对话框
 
@@ -23,10 +19,10 @@ CStockSellDlg::CStockSellDlg(CWnd* pParent /*=NULL*/)
 	, m_nHoldAmount(0)
 	, m_fHoldCost(0.0f)
 	, m_strEachEarn(_T("0"))
-	, m_strEarnPrice(_T(""))
-	, m_strLossPrice(_T(""))
 	, m_bIsPlanSell(false)
 	, m_strWndTitle(_T(""))
+	, m_strEarnPrice(_T(""))
+	, m_strLossPrice(_T(""))
 {
 }
 
@@ -48,12 +44,13 @@ void CStockSellDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Text(pDX, IDC_EDIT_EACH_EARN, m_strEachEarn);
 	DDX_DateTimeCtrl(pDX, IDC_SELL_DATE, m_oleSellDate);
 	DDX_Control(pDX, IDC_COMBO_EARN, m_comboEarn);
-	DDX_Text(pDX, IDC_EDIT_SELL_EARN_PRICE, m_strEarnPrice);
 	DDX_Control(pDX, IDC_COMBO_LOSS, m_comboLoss);
+	DDX_Text(pDX, IDC_EDIT_SELL_EARN_PRICE, m_strEarnPrice);
 	DDX_Text(pDX, IDC_EDIT_SELL_LOSS_PRICE, m_strLossPrice);
 }
 
 BEGIN_MESSAGE_MAP(CStockSellDlg, CDialogEx)
+	ON_WM_LBUTTONDBLCLK()
 	ON_BN_CLICKED(IDOK, &CStockSellDlg::OnBnClickedOk)
 	ON_BN_CLICKED(ID_BT_CALCU_EARN, &CStockSellDlg::OnBnClickedBtCalcuEarn)
 	ON_BN_CLICKED(IDCANCEL, &CStockSellDlg::OnBnClickedCancel)
@@ -61,7 +58,6 @@ BEGIN_MESSAGE_MAP(CStockSellDlg, CDialogEx)
 	ON_CBN_SELCHANGE(IDC_COMBO_EARN, &CStockSellDlg::OnSelchangeComboEarn)
 	ON_CBN_SELCHANGE(IDC_COMBO_LOSS, &CStockSellDlg::OnSelchangeComboLoss)
 END_MESSAGE_MAP()
-
 
 // CStockSellDlg 消息处理程序
 
@@ -138,10 +134,9 @@ BOOL CStockSellDlg::OnInitDialog()
 	
 	m_comboEarn.SetCurSel(5);
 	m_comboLoss.SetCurSel(5);
-
 	OnSelchangeComboEarn();
 	OnSelchangeComboLoss();
-	
+
 	return TRUE;  // return TRUE unless you set the focus to a control
 }
 
@@ -192,7 +187,6 @@ void CStockSellDlg::OnSelchangeComboEarn()
 	m_comboEarn.GetWindowTextA(strComboEarn);
 	float fEarnPrice = GetThresholdPriceFromCString(strComboEarn);
 	m_strEarnPrice.Format("%.2f", Round(fEarnPrice, 2, ROUND_4S5R));
-
 	UpdateData(FALSE);
 }
 
@@ -202,6 +196,39 @@ void CStockSellDlg::OnSelchangeComboLoss()
 	m_comboLoss.GetWindowTextA(strComboLoss);
 	float fLossPrice = GetThresholdPriceFromCString(strComboLoss);
 	m_strLossPrice.Format("%.2f", Round(fLossPrice, 2, ROUND_4S5R));
-
 	UpdateData(FALSE);
 }
+
+void CStockSellDlg::OnLButtonDblClk( UINT nFlags, CPoint point )
+{
+	CRect rectEarnEdit, rectLossEdit;
+	bool isDbClickOnPriceEdit = false;
+
+	/*
+	 * Assign m_fSellPrice with value from m_strEarnPrice(edit) or
+	 * m_strLossProce(edit) when left double click is triggered.
+	 */
+	GetDlgItem(IDC_EDIT_SELL_EARN_PRICE)->GetWindowRect(rectEarnEdit);
+	ScreenToClient(&rectEarnEdit);
+	GetDlgItem(IDC_EDIT_SELL_LOSS_PRICE)->GetWindowRect(rectLossEdit);
+	ScreenToClient(&rectLossEdit);
+
+	if (rectEarnEdit.PtInRect(point)) {
+		m_fSellPrice = (float)atof((LPCTSTR)m_strEarnPrice);
+		isDbClickOnPriceEdit = true;
+	} else if (rectLossEdit.PtInRect(point)) {
+		m_fSellPrice = (float)atof((LPCTSTR)m_strLossPrice);
+		isDbClickOnPriceEdit = true;
+	}
+
+	if (isDbClickOnPriceEdit) {
+		UpdateData(FALSE);	/* member variable -> edit */
+		CEdit* pEdit = (CEdit*)GetDlgItem(IDC_EDIT_SELL_PRICE);
+		pEdit->SetSel(0, -1);
+		pEdit->SetFocus();
+		return ;
+	}
+
+	CDialogEx::OnLButtonDblClk(nFlags, point);
+}
+

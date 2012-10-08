@@ -39,8 +39,10 @@ private:
 
 public:
 	void SetDBConnection(void* pDBConn)		{m_pDBConn = pDBConn;}
+	void SetCode(CString code)				{m_sPlanBuyCode = code;}
+	void SetBuyAmount(int buyAmount)		{m_nPlanBuyAmount = buyAmount;}
+	BOOL ShowWindow(int nCmdSHow);
 	
 private:
 	void HandlePlanBuy(void);
-
 };

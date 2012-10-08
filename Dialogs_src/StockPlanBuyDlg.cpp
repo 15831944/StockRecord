@@ -1,6 +1,3 @@
-// StockPlanBuyDlg.cpp : implementation file
-//
-
 #include "stdafx.h"
 #include "../StockRecord.h"
 #include "StockPlanBuyDlg.h"
@@ -9,7 +6,6 @@
 #include "../StockModel.h"
 #include "../StockDBConnection.h"
 #include "../StockCalculate.h"
-
 
 // CStockPlanBuyDlg dialog
 
@@ -58,6 +54,7 @@ END_MESSAGE_MAP()
 BOOL CStockPlanBuyDlg::OnInitDialog()
 {
 	CDialogEx::OnInitDialog();
+	UpdateData(FALSE);
 
 	CEdit* pEdit = (CEdit*)GetDlgItem(IDC_EDIT_PLANBUY_CODE);
 	pEdit->SetSel(0, -1);
@@ -67,7 +64,6 @@ BOOL CStockPlanBuyDlg::OnInitDialog()
 	// return TRUE, unless you set the focus to a control
 	// EXCEPTION: OCX Property Pages should return FALSE
 }
-
 
 void CStockPlanBuyDlg::OnBnClickedOk()
 {
@@ -100,9 +96,6 @@ void CStockPlanBuyDlg::OnBnClickedOk()
 void CStockPlanBuyDlg::OnBnClickedCancel()
 {
 	/* Clear all the input & output of edits, if necessary. */
-	// m_sPlanBuyCode = _T("");
-	// ...
-	// UpdateData(FALSE);
 
 	CDialogEx::OnCancel();
 }
@@ -147,9 +140,28 @@ void CStockPlanBuyDlg::HandlePlanBuy( void )
 void CStockPlanBuyDlg::OnShowWindow(BOOL bShow, UINT nStatus)
 {
 	CDialogEx::OnShowWindow(bShow, nStatus);
-
+	UpdateData(FALSE);
 	/* Make the plan buy code edit focused */
 	CEdit* pEdit = (CEdit*)GetDlgItem(IDC_EDIT_PLANBUY_CODE);
 	pEdit->SetSel(0, -1);
 	pEdit->SetFocus();
+}
+
+/**
+ *	Overwrite this function to SetFocus to m_sPlanBuyCode(edit).
+ */
+BOOL CStockPlanBuyDlg::ShowWindow( int nCmdSHow )
+{
+	m_fPlanBuyPrice = 0.0f;
+	m_nPlanBuyHoldAmount = 0;
+	m_fPlanBuyHoldCost = 0;
+	m_fPlanBuyEvenPrice = 0;
+
+	BOOL ret = CDialogEx::ShowWindow(nCmdSHow);
+	UpdateData(FALSE);
+	CEdit* pEdit = (CEdit*)GetDlgItem(IDC_EDIT_PLANBUY_CODE);
+	pEdit->SetSel(0, -1);
+	pEdit->SetFocus();
+
+	return ret;
 }
