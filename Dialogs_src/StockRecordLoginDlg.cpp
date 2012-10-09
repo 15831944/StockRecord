@@ -15,7 +15,7 @@ CStockRecordLoginDlg::CStockRecordLoginDlg(CWnd* pParent /*=NULL*/)
 	: CDialogEx(CStockRecordLoginDlg::IDD, pParent)
 	, m_strUserName(_T(""))
 	, m_strPassword(_T(""))
-	, m_strInputUserName(_T(""))
+	, m_strInputUserName(_T("loxin"))
 	, m_strInputPassword(_T(""))
 {
 }
@@ -79,7 +79,7 @@ BOOL CStockRecordLoginDlg::OnInitDialog()
 	SetPassword("8851");
 
 	/* Set focus to username input. */
-	CEdit* pEdit = (CEdit*)GetDlgItem(IDC_EDIT_USERNAME);
+	CEdit* pEdit = (CEdit*)GetDlgItem(IDC_EDIT_PASSWORD);
 	pEdit->SetSel(0, -1);
 	pEdit->SetFocus();
 

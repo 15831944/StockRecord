@@ -16,6 +16,9 @@
 #include <vector>
 using namespace std;
 
+// User defined msg, to hide / show main dialog.
+#define WM_STOCK_RECORD_HIDESHOW	(WM_USER + 2)
+
 // CStockRecordDlg 对话框
 class CStockRecordDlg : public CDialogEx
 {
@@ -61,10 +64,11 @@ protected:
 	afx_msg void OnRButtonDown(UINT nFlags, CPoint point);
 	afx_msg HRESULT OnTrayNotification(WPARAM wParam, LPARAM lParam);// 响应 TrayIcon 的消息
 	afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
-	afx_msg void OnMenuTrayiconShowwd();
+	afx_msg void OnMenuTrayiconShowHideWnd();
 	afx_msg void OnMenuTrayiconExit();
 	afx_msg void OnMenuPlanbuy();
 	afx_msg void OnStockholdPlanbuy();
+	afx_msg HRESULT OnHotKey(WPARAM wParam, LPARAM lParam);
 	DECLARE_MESSAGE_MAP()
 
 private:

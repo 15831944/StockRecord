@@ -108,10 +108,11 @@ BEGIN_MESSAGE_MAP(CStockRecordDlg, CDialogEx)
 	ON_COMMAND(IDM_ALWAYS_TOP, &CStockRecordDlg::OnMenuAlwaysTop)
 	ON_WM_CREATE()
 	ON_MESSAGE(WM_ICON_NOTIFY, &CStockRecordDlg::OnTrayNotification)
-	ON_COMMAND(ID_MENU_TRAYICON_SHOWWD, &CStockRecordDlg::OnMenuTrayiconShowwd)
+	ON_COMMAND(ID_MENU_TRAYICON_SHOWWD, &CStockRecordDlg::OnMenuTrayiconShowHideWnd)
 	ON_COMMAND(ID_MENU_TRAYICON_EXIT, &CStockRecordDlg::OnMenuTrayiconExit)
 	ON_COMMAND(ID_MENU_PLANBUY, &CStockRecordDlg::OnMenuPlanbuy)
 	ON_COMMAND(IDM_STOCKHOLD_PLANBUY, &CStockRecordDlg::OnStockholdPlanbuy)
+	ON_MESSAGE(WM_HOTKEY, &CStockRecordDlg::OnHotKey)
 END_MESSAGE_MAP()
 
 // CStockRecordDlg 消息处理程序
@@ -144,6 +145,12 @@ BOOL CStockRecordDlg::OnInitDialog()
 	//  执行此操作
 	SetIcon(m_hIcon, TRUE);			// 设置大图标
 	SetIcon(m_hIcon, FALSE);		// 设置小图标
+
+	/* Register hot key: Alt + Shift + R. */
+	if (!RegisterHotKey(this->GetSafeHwnd(), WM_STOCK_RECORD_HIDESHOW, 
+		MOD_ALT | MOD_SHIFT , 'R'/*0x52*/)) {
+		MessageBox("Register hot key failed.");
+	}
 
 	SetupDBTableNames();
 	m_dbConn.Connect();
@@ -465,6 +472,7 @@ void CStockRecordDlg::OnDestroy()
 	CDialogEx::OnDestroy();
 	
 	m_dbConn.DisConnect();
+	UnregisterHotKey(GetSafeHwnd(), WM_STOCK_RECORD_HIDESHOW);
 }
 
 void CStockRecordDlg::OnMenuHoldRecord()
@@ -1069,14 +1077,14 @@ HRESULT CStockRecordDlg::OnTrayNotification( WPARAM wParam, LPARAM lParam )
 		menu.DestroyMenu();
 	} else if (LOWORD(lParam) == WM_LBUTTONDBLCLK) {
 		/* Response for double left click */
-		OnMenuTrayiconShowwd();
+		OnMenuTrayiconShowHideWnd();
 	}
 
 	return 1L;
 }
 
 /* Show or hide the dialog */
-void CStockRecordDlg::OnMenuTrayiconShowwd()
+void CStockRecordDlg::OnMenuTrayiconShowHideWnd()
 {
 	AfxGetMainWnd()->ShowWindow(SW_MINIMIZE);
 	AfxGetMainWnd()->ShowWindow(m_bIsWndHidden ? SW_RESTORE : SW_HIDE);
@@ -1126,7 +1134,7 @@ BOOL CStockRecordDlg::PreTranslateMessage(MSG* pMsg)
 
 		case 0x54:	/* T + CONTROL will hide the dialog (only hide) */
 			if (GetAsyncKeyState(VK_CONTROL) & 0x8000) {
-				OnMenuTrayiconShowwd();
+				OnMenuTrayiconShowHideWnd();
 				return TRUE;
 			}
 			break;
@@ -1184,4 +1192,13 @@ void CStockRecordDlg::OnStockholdPlanbuy()
 	m_pPlanBuyDlg->SetCode(holdModel.code);
 	m_pPlanBuyDlg->SetBuyAmount(atoi((LPCTSTR)holdModel.hold_amount));
 	m_pPlanBuyDlg->ShowWindow(SW_SHOW);
+}
+
+/* Hander for global hot key, to hide/show main dialog. */
+HRESULT CStockRecordDlg::OnHotKey(WPARAM wParam, LPARAM lParam)
+{
+	if (wParam == WM_STOCK_RECORD_HIDESHOW)
+		OnMenuTrayiconShowHideWnd();
+
+	return (HRESULT)0;
 }
