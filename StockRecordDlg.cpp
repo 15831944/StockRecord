@@ -370,7 +370,7 @@ CStockRecordDlg::SetGridData( int nRowCount, int nColCount, char** result )
 		if (string::npos != strOutName.find(_T("日期")) || 
 			string::npos != strOutName.find(_T("date")))
 			columnLen += 10;	/* buy_date & sell_date columns have wider width. */
-		m_GridCtrl.SetColumnWidth(colIdx, columnLen - 5);
+		m_GridCtrl.SetColumnWidth(colIdx, columnLen - 12);
 	}
 
 	/**
