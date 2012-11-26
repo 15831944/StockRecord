@@ -49,9 +49,6 @@
     <None Include="res\icon1.ico">
       <Filter>资源文件</Filter>
     </None>
-    <None Include="res\key.jpg">
-      <Filter>资源文件</Filter>
-    </None>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="StockRecord.h">

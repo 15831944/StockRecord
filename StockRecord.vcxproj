@@ -98,7 +98,6 @@
   <ItemGroup>
     <None Include="ReadMe.txt" />
     <None Include="res\icon1.ico" />
-    <None Include="res\key.jpg" />
     <None Include="res\StockRecord.ico" />
     <None Include="res\StockRecord.rc2" />
   </ItemGroup>

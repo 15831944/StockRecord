@@ -35,9 +35,9 @@ CStockFees::CalculateHoldCostByBuy( bool bStockType, float fBuyPrice, int nBuyAm
 		m_fBuyTransferMoney = 0.0f;
 	}
 
-	/* hold cost */
-	m_fHoldCost = Round((m_fBuyStockMoney + m_fBuyCommiMoney +	\
-		m_fBuyTransferMoney) / nBuyAmount, 3);
+	/* hold cost, without Round on the result. hold_cost will be used to 
+	 * calculate other values, so more precise, much better.*/
+	m_fHoldCost = (m_fBuyStockMoney + m_fBuyCommiMoney + m_fBuyTransferMoney) / nBuyAmount;
 
 	return m_fHoldCost;
 }
