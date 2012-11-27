@@ -95,7 +95,8 @@ public:
 
 private:
 	/* DB file doesn't exist, init its tables. */
-	int InitDatabaseTables(void);
+	int InitDatabaseStockTables(void);
+	int InitDatabaseFutureTables(void);
 	BOOL IsTableNamesValie(void);
 	string GetActiveTableName(ENUMACTIVETABLE activeTable);
 };

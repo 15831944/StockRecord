@@ -14,14 +14,14 @@ using namespace std;
 class FieldNamesMap
 {
 private:
-	static std::map<std::string, std::string> m_FieldNamesMap;
+	static std::map<std::string, std::string> m_StockFieldNamesMap;
 	static bool m_isMapInited;
 
 public:
 	FieldNamesMap(void);
 	~FieldNamesMap();
 	
-	static int InitFieldNamesMap(void);
+	static int InitStockFieldNamesMap(void);
 	static string GetChNameByEnName(string enName);
 };
 

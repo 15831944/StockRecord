@@ -113,6 +113,10 @@ BEGIN_MESSAGE_MAP(CStockRecordDlg, CDialogEx)
 	ON_COMMAND(ID_MENU_PLANBUY, &CStockRecordDlg::OnMenuPlanbuy)
 	ON_COMMAND(IDM_STOCKHOLD_PLANBUY, &CStockRecordDlg::OnStockholdPlanbuy)
 	ON_MESSAGE(WM_HOTKEY, &CStockRecordDlg::OnHotKey)
+	ON_COMMAND(IDM_FUTURE_TAKE_POS, &CStockRecordDlg::OnMenuFutureTakenPosRecord)
+	ON_COMMAND(IDM_FUTURE_HOLD_POS, &CStockRecordDlg::OnMenuFutureHoldPosRecord)
+	ON_COMMAND(IDM_FUTURE_CLOSE_POS, &CStockRecordDlg::OnMenuFutureClosedPosRecord)
+	ON_COMMAND(IDM_FUTURE_MONEY, &CStockRecordDlg::OnMenuFutureMoneyRecord)
 END_MESSAGE_MAP()
 
 // CStockRecordDlg 消息处理程序
@@ -343,13 +347,13 @@ CStockRecordDlg::SetGridData( int nRowCount, int nColCount, char** result )
 		if (!data || strlen(data) == 0)
 			return ERR;
 
-		/* 1.1 Set left top item */
+		/* -1.1 Set left top item */
 		if (colIdx == 0) {			// Do not display left-top "id" string.
 			SetLeftTopItemData();
 			continue;
 		}
 
-		/*  1.2.0 Show field names. Convert English field name to Chinese name. */
+		/*  -1.2 Show field names. Convert English field name to Chinese name. */
 		string strOutName("");
 		strOutName = FieldNamesMap::GetChNameByEnName(data);
 		m_GridCtrl.SetItemText(0, colIdx, strOutName.c_str());
@@ -359,7 +363,7 @@ CStockRecordDlg::SetGridData( int nRowCount, int nColCount, char** result )
 		}
 
 		/**
-		 *	1.2.1 Set gird's column's width according strOutName's width.
+		 *	-1.3 Set gird's column's width according strOutName's width.
 		 *  Maybe have no effect because setting of data's font format.
 		 */
 		CSize sz;
@@ -384,7 +388,7 @@ CStockRecordDlg::SetGridData( int nRowCount, int nColCount, char** result )
 			m_GridCtrl.SetRowBkClrWithoutFixedCells(rowIdx, RGB(0xBC, 0xC7, 0xD8));
 		for (int colIdx = 0; colIdx < nColCount; ++colIdx) {
 
-			/* 2.1 Display 'seqNo' in col 0, instead of 'id'. */
+			/* -2.1 Display 'seqNo' in col 0, instead of 'id'. */
 			if (colIdx == 0) {
 				char strSeqNo[8] = "";
 				_itoa_s(seqNo++, strSeqNo, 10);
@@ -406,7 +410,7 @@ CStockRecordDlg::SetGridData( int nRowCount, int nColCount, char** result )
 				continue;
 			}
 
-			/* 2.2 Display data, Convert UTF8 word to GB2312 format. */
+			/* -2.2 Display data, Convert UTF8 word to GB2312 format. */
 			string strOut;			
 			const char* data = result[rowIdx * nColCount + colIdx];
 			string strData = CChineseCodeLib::UTF8ToGB2312(data);
@@ -477,7 +481,7 @@ void CStockRecordDlg::OnDestroy()
 
 void CStockRecordDlg::OnMenuHoldRecord()
 {
-	SetWindowText("Hold Record");
+	SetWindowText("Stock - Hold Record");
 	m_dbConn.SetActiveTable(ACTIVE_TABLE_HOLD);
 	MakeMenuItemCheckedByActiveTable();		
 	GetAndShowTableData(ACTIVE_TABLE_HOLD);
@@ -485,7 +489,7 @@ void CStockRecordDlg::OnMenuHoldRecord()
 
 void CStockRecordDlg::OnMenuBuyRecord()
 {
-	SetWindowText("Buy Record");
+	SetWindowText("Stock - Buy Record");
 	m_dbConn.SetActiveTable(ACTIVE_TABLE_BUY);
 	MakeMenuItemCheckedByActiveTable();
 	GetAndShowTableData(ACTIVE_TABLE_BUY);
@@ -493,7 +497,7 @@ void CStockRecordDlg::OnMenuBuyRecord()
 
 void CStockRecordDlg::OnMenuSellRecord()
 {
-	SetWindowText("Sell Record");
+	SetWindowText("Stock - Sell Record");
 	m_dbConn.SetActiveTable(ACTIVE_TABLE_SELL);
 	MakeMenuItemCheckedByActiveTable();
 	GetAndShowTableData(ACTIVE_TABLE_SELL);
@@ -501,7 +505,7 @@ void CStockRecordDlg::OnMenuSellRecord()
 
 void CStockRecordDlg::OnMenuMoneyRecord()
 {
-	SetWindowText("Money Record");
+	SetWindowText("Stock - Money Record");
 	m_dbConn.SetActiveTable(ACTIVE_TABLE_MONEY);
 	MakeMenuItemCheckedByActiveTable();
 	GetAndShowTableData(ACTIVE_TABLE_MONEY);
@@ -980,7 +984,7 @@ void CStockRecordDlg::MakeMenuItemCheckedByActiveTable(void)
 	GetMenu()->GetSubMenu(0)->CheckMenuItem(ID_MENU_SELL_RECORD, MF_UNCHECKED);
 	GetMenu()->GetSubMenu(0)->CheckMenuItem(ID_MENU_MONEY_RECORD, MF_UNCHECKED);
 
-	/* Make active table menu itme checked */
+	/* Make active table menu item checked */
 	switch (m_dbConn.GetActiveTable()) {
 	case ACTIVE_TABLE_BUY:
 		GetMenu()->GetSubMenu(0)->CheckMenuItem(ID_MENU_BUY_RECORD, MF_CHECKED);
@@ -1201,4 +1205,31 @@ HRESULT CStockRecordDlg::OnHotKey(WPARAM wParam, LPARAM lParam)
 		OnMenuTrayiconShowHideWnd();
 
 	return (HRESULT)0;
+}
+
+/************************************************************************/
+/*                   Future record related.                             */
+/************************************************************************/
+
+/** Record of taken position */
+void CStockRecordDlg::OnMenuFutureTakenPosRecord()
+{
+
+}
+
+/** Record of hold position */
+void CStockRecordDlg::OnMenuFutureHoldPosRecord()
+{
+
+}
+
+/** Record of closed position */
+void CStockRecordDlg::OnMenuFutureClosedPosRecord()
+{
+
+}
+
+void CStockRecordDlg::OnMenuFutureMoneyRecord()
+{
+
 }

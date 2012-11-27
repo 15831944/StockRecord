@@ -59,7 +59,8 @@ int CStockDBConnection::Connect( void )
 	 *	Initiate new database's tables.
 	 */
 	m_nDBStatus = DB_STATUS_OPENED;
-	ret = InitDatabaseTables();
+	ret = InitDatabaseStockTables();
+	ret = InitDatabaseFutureTables();
 
 	if (ret == SQLITE_OK)
 		AfxMessageBox("Database does not exist.\nIts tables has been inited.");
@@ -83,7 +84,7 @@ int CStockDBConnection::DisConnect( void )
 	return OK;
 }
 
-int CStockDBConnection::InitDatabaseTables( void )
+int CStockDBConnection::InitDatabaseStockTables( void )
 {
 	if (!m_pDatabase || m_nDBStatus != DB_STATUS_OPENED) {
 		return ERR;
@@ -620,6 +621,15 @@ int CStockDBConnection::UpdateSellTotalEarn( void )
 		errmsg = NULL;
 		return ret;
 	}
+
+	return ret;
+}
+
+
+// TODO: Create tables if db doesnot exist.
+int CStockDBConnection::InitDatabaseFutureTables( void )
+{
+	int ret = 0;
 
 	return ret;
 }

@@ -69,6 +69,10 @@ protected:
 	afx_msg void OnMenuPlanbuy();
 	afx_msg void OnStockholdPlanbuy();
 	afx_msg HRESULT OnHotKey(WPARAM wParam, LPARAM lParam);
+	afx_msg void OnMenuFutureTakenPosRecord();
+	afx_msg void OnMenuFutureHoldPosRecord();
+	afx_msg void OnMenuFutureClosedPosRecord();
+	afx_msg void OnMenuFutureMoneyRecord();
 	DECLARE_MESSAGE_MAP()
 
 private:
@@ -132,4 +136,6 @@ private:
 	void StoreRecordId(int id);
 	
 
+public:
+	
 };
