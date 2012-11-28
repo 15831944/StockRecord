@@ -4,7 +4,7 @@
 
 /* ===================== Stock sell model =====================  */
 
-CStockModelBase::CStockModelBase(void)
+CRecordModelBase::CRecordModelBase(void)
 	: m_encodeStyle(ENCODE_STYLE_GB2312)
 	, id(-1)
 	, code(_T("»ùÀàcode"))
@@ -12,11 +12,11 @@ CStockModelBase::CStockModelBase(void)
 {
 }
 
-CStockModelBase::~CStockModelBase(void)
+CRecordModelBase::~CRecordModelBase(void)
 {
 }
 
-void CStockModelBase::SetEncodeStyle( int encodeStyle )
+void CRecordModelBase::SetEncodeStyle( int encodeStyle )
 {
 	switch (encodeStyle) {
 
@@ -33,7 +33,7 @@ void CStockModelBase::SetEncodeStyle( int encodeStyle )
 	}
 }
 
-int CStockModelBase::GetEncodeStyle( void ) const
+int CRecordModelBase::GetEncodeStyle( void ) const
 {
 	switch (m_encodeStyle) {
 	case ENCODE_STYLE_GB2312:
@@ -50,7 +50,7 @@ int CStockModelBase::GetEncodeStyle( void ) const
 	}
 }
 
-int CStockModelBase::ConvertEncodeFormat( int targetEncode )
+int CRecordModelBase::ConvertEncodeFormat( int targetEncode )
 {
 	if (GetEncodeStyle() == targetEncode)
 		return ERR;
@@ -81,7 +81,7 @@ int CStockModelBase::ConvertEncodeFormat( int targetEncode )
  *	Stock buy model
  */ 
 CStockModelBuy::CStockModelBuy( void )
-	: CStockModelBase()		/* construct your base object firstly */
+	: CRecordModelBase()		/* construct your base object firstly */
 	, buy_price(_T(""))
 	, buy_amount(_T(""))
 	, buy_date(_T(""))
@@ -97,7 +97,7 @@ CStockModelBuy::~CStockModelBuy( void )
  *	=====================  Stock hold model ===================== 
  */ 
 CStockModelHold::CStockModelHold( void )
-	: CStockModelBase()
+	: CRecordModelBase()
 	, buy_price(_T(""))
 	, hold_cost(_T(""))
 	, hold_amount(_T(""))
@@ -113,7 +113,7 @@ CStockModelHold::~CStockModelHold( void )
 /* ========== Stock Sell Model ============ */
 
 CStockModelSell::CStockModelSell( void )
-	: CStockModelBase()
+	: CRecordModelBase()
 	, buy_price(_T(""))
 	, sell_price(_T(""))
 	, sell_amount(_T(""))
@@ -131,3 +131,41 @@ CStockModelSell::~CStockModelSell( void )
 }
 
 
+/************************************************************************/
+/*                   Future record models related                       */
+/************************************************************************/
+
+CFutureTakenModel::CFutureTakenModel( void )
+	: taken_price(_T(""))
+	, taken_amount(_T(""))
+	, multiplier(_T(""))
+	, margin_ratio(_T(""))
+	, commision_ratio(_T(""))
+	, taken_date(_T(""))
+{
+}
+
+CFutureTakenModel::~CFutureTakenModel( void )
+{
+}
+
+CFutureHoldModel::CFutureHoldModel( void )
+	: taken_price(_T(""))
+	, hold_amount(_T(""))
+	, hold_cost(_T(""))
+	, even_price(_T(""))
+{
+}
+
+CFutureHoldModel::~CFutureHoldModel( void )
+{
+}
+
+CFutureClosedModel::CFutureClosedModel( void )
+{
+
+}
+
+CFutureClosedModel::~CFutureClosedModel( void )
+{
+}

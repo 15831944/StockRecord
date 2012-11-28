@@ -12,11 +12,11 @@
 /**
  * Base model 
  */
-class CStockModelBase
+class CRecordModelBase
 {
 public:
-	CStockModelBase(void);
-	~CStockModelBase(void);
+	CRecordModelBase(void);
+	~CRecordModelBase(void);
 
 public:
 	/**
@@ -41,7 +41,7 @@ public:
 /**
  *	Stock buy record model.
  */
-class CStockModelBuy : public CStockModelBase
+class CStockModelBuy : public CRecordModelBase
 {
 public:
  	CStockModelBuy(void);
@@ -57,7 +57,7 @@ public:
 /**
  *	Stock hold record model.
  */
-class CStockModelHold : public CStockModelBase
+class CStockModelHold : public CRecordModelBase
 {
 public:
 	CStockModelHold(void);
@@ -74,7 +74,7 @@ public:
 /**
  *	Stock sell record model.
  */
-class CStockModelSell : public CStockModelBase
+class CStockModelSell : public CRecordModelBase
 {
 public:
 	CStockModelSell(void);
@@ -94,8 +94,45 @@ public:
 /**
  *	Stock money record model.
  */
-class CStockModelMoney : public CStockModelBase
+class CStockModelMoney
 {
+
+};
+
+/**
+ *	Future taken / hold / clsed record model.
+ */
+class CFutureTakenModel : public CRecordModelBase
+{
+public:
+	CFutureTakenModel(void);
+	~CFutureTakenModel(void);
+public:
+	CString taken_price;
+	CString taken_amount;
+	CString multiplier;
+	CString margin_ratio;
+	CString commision_ratio;
+	CString taken_date;
+};
+
+class CFutureHoldModel : public CRecordModelBase
+{
+public:
+	CFutureHoldModel(void);
+	~CFutureHoldModel(void);
+public:
+	CString taken_price;
+	CString hold_amount;
+	CString hold_cost;
+	CString even_price;
+};
+
+class CFutureClosedModel : public CRecordModelBase
+{
+public:
+	CFutureClosedModel(void);
+	~CFutureClosedModel(void);
 
 };
 

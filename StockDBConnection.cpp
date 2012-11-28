@@ -320,8 +320,6 @@ int CStockDBConnection::RemoveRecordByTableId( ENUMACTIVETABLE whichTable, int i
 		+ " WHERE id = " + strId 
 		+ "; END TRANSACTION;";
 
-
-
 	/* Delete record by id */
 	char* errmsg = NULL;
 	int ret = 0;

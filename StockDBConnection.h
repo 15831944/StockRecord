@@ -82,7 +82,7 @@ public:
 	CStockTableDataInfo QueryWholeTableData(ENUMACTIVETABLE whichTable);
 	int ReleaseWholeTableData(char** pData);
 
-	/* Select, insert, delete, update record. */
+	/* Select, insert, delete, update stock record. */
 	int RemoveRecordByTableId(ENUMACTIVETABLE whichTable, int id);
 	int InsertBuyRecord	(const CStockModelBuy& buyModel);
 	int InsertHoldRecord(const CStockModelHold& holdModel);
