@@ -12,26 +12,27 @@ using namespace std;
 
 enum ENUMACTIVETABLE		/* Which table is displayed now. */
 {
-	ACTIVE_TABLE_BUY = 0,	/* table stock_buy */
-	ACTIVE_TABLE_HOLD,		/* table stock_hold */
-	ACTIVE_TABLE_SELL,		/* table stock_sell */
-	ACTIVE_TABLE_MONEY		/* table stock_money */
+	STOCK_TABLE_BUY = 0,	/* table stock_buy */
+	STOCK_TABLE_HOLD,		/* table stock_hold */
+	STOCK_TABLE_SELL,		/* table stock_sell */
+	STOCK_TABLE_MONEY		/* table stock_money */
 };
 
-class CStockTableDataInfo;
-int StockHoldRecordCallback( void* para, int nCol, char** colValue, char** colName ); 
+class CDBTableDataInfo;
 
+int StockHoldRecordCallback( void* para, int nCol, char** colValue, char** colName ); 
+int FutureHoldRecordCallback( void* para, int nCol, char** colValue, char** colName );
 
 /**
  *	Hold information of a whole table, like how many rows and columns,
  *  where the table data is starting from.
  *  Used when querying data by using sqlite3_get_table().
  */
-class CStockTableDataInfo
+class CDBTableDataInfo
 {
 public:
-	CStockTableDataInfo(void);
-	~CStockTableDataInfo(void);
+	CDBTableDataInfo(void);
+	~CDBTableDataInfo(void);
 public:
 	int m_nRow;		// How many rows
 	int m_nCol;		// How many columns
@@ -39,33 +40,27 @@ public:
 	int m_errcode;
 };
 
-class CStockDBConnection
+class CDataBaseConnection
 {
 public:
-	CStockDBConnection(void);
-	~CStockDBConnection(void);
+	CDataBaseConnection(void);
+	~CDataBaseConnection(void);
 
 private:
-	/* database and tables' names */
-	string m_sDBName;
-	string m_sBuyTableName;
-	string m_sHoldTableName;
-	string m_sSellTableName;
-	string m_sMoneyTableName;
-
-	/* database connection */
-	sqlite3* m_pDatabase;
+	string m_sDBName;		/* database name */
+	sqlite3* m_pDatabase;	/* database connection */
 	int m_nDBStatus;
 	ENUMACTIVETABLE m_eActiveTable;
-	
-public:
-	void SetDatabaseName(string dbName)		{m_sDBName = dbName;}
-	void SetBuyTableName(string tableName)	{m_sBuyTableName = tableName;}
-	void SetHoldTableName(string tableName)	{m_sHoldTableName = tableName;}
-	void SetSellTableName(string tableName)	{m_sSellTableName = tableName;}
-	void SetMoneyTableName(string tableName){m_sMoneyTableName = tableName;}
+
+private:
+	/* DB file doesn't exist, init its tables. */
+	int InitDatabaseStockTables(void);
+	int InitDatabaseFutureTables(void);
+	BOOL IsTableNamesValie(void);
+	string GetActiveTableName(ENUMACTIVETABLE activeTable);
 
 public:
+	void SetDatabaseName(string dbName)		{m_sDBName = dbName;}
 	void SetActiveTable(ENUMACTIVETABLE activeTable){m_eActiveTable = activeTable;}
 	ENUMACTIVETABLE GetActiveTable(void) const		{return m_eActiveTable;}
 	void SetDBStatus(int status)					{m_nDBStatus = status;}
@@ -74,31 +69,49 @@ public:
 	/* Connect and disconnect to database. */
 	int Connect(void);
 	int DisConnect(void);
-	sqlite3* GetConnect(void) const			{ return m_pDatabase;}
+	sqlite3* GetConnect(void) const					{ return m_pDatabase;}
 	
 	/* You have to call ReleaseWholeTableData() to release the data 
 	 * you have obtained by calling QueryWholeTableData().
 	 */
-	CStockTableDataInfo QueryWholeTableData(ENUMACTIVETABLE whichTable);
+	CDBTableDataInfo QueryWholeTableData(ENUMACTIVETABLE whichTable);
 	int ReleaseWholeTableData(char** pData);
+	int RemoveRecordByTableId(ENUMACTIVETABLE whichTable, int id);
+
+
+	/************************************************************************/
+	/*    ============ operations for stock related tables =============    */
+	/************************************************************************/
+private:
+	/* Stock related tables' names */
+	string m_sStockBuyTableName;
+	string m_sStockHoldTableName;
+	string m_sStockSellTableName;
+	string m_sStockMoneyTableName;
+	
+public:
+	void SetStockBuyTableName(string tableName)	{m_sStockBuyTableName = tableName;}
+	void SetStockHoldTableName(string tableName){m_sStockHoldTableName = tableName;}
+	void SetStockSellTableName(string tableName){m_sStockSellTableName = tableName;}
+	void SetStockMoneyTableName(string tableName){m_sStockMoneyTableName = tableName;}
 
 	/* Select, insert, delete, update stock record. */
-	int RemoveRecordByTableId(ENUMACTIVETABLE whichTable, int id);
-	int InsertBuyRecord	(const CStockModelBuy& buyModel);
-	int InsertHoldRecord(const CStockModelHold& holdModel);
-	int InsertSellRecord(const CStockModelSell& sellModel);
-	int InsertMoneyRecord(const CStockModelMoney& moneyModel);
-	CStockModelHold SelectHoldModelByCode(const char* code);
-	CStockModelHold SelectHoldModelById(int id);
-	int UpdateHoldModel(const CStockModelHold& holdModel);
-	int UpdateSellTotalEarn(void);
+	int InsertStockBuyRecord	(const CStockModelBuy& buyModel);
+	int InsertStockHoldRecord(const CStockModelHold& holdModel);
+	int InsertStockSellRecord(const CStockModelSell& sellModel);
+	int InsertStockMoneyRecord(const CStockModelMoney& moneyModel);
+	CStockModelHold SelectStockHoldModelByCode(const char* code);
+	CStockModelHold SelectStockHoldModelById(int id);
+	int UpdateStockHoldModel(const CStockModelHold& holdModel);
+	int UpdateStockSellTotalEarn(void);
 
+
+	/************************************************************************/
+	/*    =========== operations for future related tables =============    */
+	/************************************************************************/
 private:
-	/* DB file doesn't exist, init its tables. */
-	int InitDatabaseStockTables(void);
-	int InitDatabaseFutureTables(void);
-	BOOL IsTableNamesValie(void);
-	string GetActiveTableName(ENUMACTIVETABLE activeTable);
+
+
 };
 
 #endif

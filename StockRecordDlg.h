@@ -109,7 +109,7 @@ public:
 
 private:	
 	CGridCtrl m_GridCtrl;
-	CStockDBConnection m_dbConn;
+	CDataBaseConnection m_dbConn;
 	CTrayIcon* m_pTrayIcon;
 	CStockPlanBuyDlg* m_pPlanBuyDlg;
 

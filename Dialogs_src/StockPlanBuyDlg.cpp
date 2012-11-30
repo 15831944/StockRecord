@@ -106,9 +106,9 @@ void CStockPlanBuyDlg::HandlePlanBuy( void )
 		return ;
 
 	/* Select holdModel by the plan buy stock code to see if the stock exists. */
-	CStockDBConnection* pDBConn = (CStockDBConnection*)m_pDBConn;
+	CDataBaseConnection* pDBConn = (CDataBaseConnection*)m_pDBConn;
 	CStockModelHold holdModel = 
-		pDBConn->SelectHoldModelByCode((LPCTSTR)m_sPlanBuyCode);
+		pDBConn->SelectStockHoldModelByCode((LPCTSTR)m_sPlanBuyCode);
 	bool isHoldTableHasSameStock = holdModel.id > 0 ? true : false;
 
 	/* Calculate hold cost and even price. */

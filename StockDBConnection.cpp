@@ -2,7 +2,7 @@
 #include "StockDBConnection.h"
 
 
-CStockTableDataInfo::CStockTableDataInfo(void)
+CDBTableDataInfo::CDBTableDataInfo(void)
 	: m_nRow(-1)
 	, m_nCol(-1)
 	, m_pData(NULL)
@@ -11,25 +11,25 @@ CStockTableDataInfo::CStockTableDataInfo(void)
 }
 
 
-CStockTableDataInfo::~CStockTableDataInfo(void)
+CDBTableDataInfo::~CDBTableDataInfo(void)
 {
 	m_pData = NULL;
 }
 
 
-CStockDBConnection::CStockDBConnection(void)
+CDataBaseConnection::CDataBaseConnection(void)
 	: m_pDatabase(NULL)
 	, m_nDBStatus(-1)
 {
 }
 
 
-CStockDBConnection::~CStockDBConnection(void)
+CDataBaseConnection::~CDataBaseConnection(void)
 {
 	DisConnect();
 }
 
-int CStockDBConnection::Connect( void )
+int CDataBaseConnection::Connect( void )
 {
 	if (m_pDatabase && m_nDBStatus == DB_STATUS_OPENED) 	// already opened.
 		return OK;
@@ -68,7 +68,7 @@ int CStockDBConnection::Connect( void )
 	return ret;
 }
 
-int CStockDBConnection::DisConnect( void )
+int CDataBaseConnection::DisConnect( void )
 {
 	if (!m_pDatabase && m_nDBStatus != DB_STATUS_OPENED)
 		return OK;
@@ -84,7 +84,7 @@ int CStockDBConnection::DisConnect( void )
 	return OK;
 }
 
-int CStockDBConnection::InitDatabaseStockTables( void )
+int CDataBaseConnection::InitDatabaseStockTables( void )
 {
 	if (!m_pDatabase || m_nDBStatus != DB_STATUS_OPENED) {
 		return ERR;
@@ -102,7 +102,7 @@ int CStockDBConnection::InitDatabaseStockTables( void )
 	sql.clear();
 	sql = sql 
 		+ "CREATE TABLE "
-		+ m_sBuyTableName 
+		+ m_sStockBuyTableName 
 		+ " (	id INTEGER PRIMARY KEY AUTOINCREMENT, "
 		+ "		code		VARCHAR(6) NOT NULL, "
 		+ "		name		VARCHAR(10), "
@@ -128,7 +128,7 @@ int CStockDBConnection::InitDatabaseStockTables( void )
 	sql.clear();
 	sql = sql
 		+ "CREATE TABLE "
-		+ m_sHoldTableName
+		+ m_sStockHoldTableName
 		+ " (	id INTEGER PRIMARY KEY AUTOINCREMENT, "
 		+ "		code		VARCHAR(6) NOT NULL, "
 		+ "		name		VARCHAR(10), "
@@ -156,7 +156,7 @@ int CStockDBConnection::InitDatabaseStockTables( void )
 	sql.clear();
 	sql = sql 
 		+ "CREATE TABLE "
-		+ m_sSellTableName
+		+ m_sStockSellTableName
 		+ " (	id INTEGER PRIMARY KEY AUTOINCREMENT, "
 		+ "		code		VARCHAR(6) NOT NULL, "
 		+ "		name		VARCHAR(10), "
@@ -187,7 +187,7 @@ int CStockDBConnection::InitDatabaseStockTables( void )
 	sql.clear();
 	sql = sql
 		+ "CREATE TABLE "
-		+ m_sMoneyTableName
+		+ m_sStockMoneyTableName
 		+ " (	id INTEGER PRIMARY KEY AUTOINCREMENT, "
 		+ "		each_money		FLOAT, "
 		+ "		money_date		DATE, "
@@ -209,10 +209,10 @@ int CStockDBConnection::InitDatabaseStockTables( void )
 	return ret;
 }
 
-BOOL CStockDBConnection::IsTableNamesValie( void )
+BOOL CDataBaseConnection::IsTableNamesValie( void )
 {
-	if (m_sBuyTableName.empty() || m_sHoldTableName.empty()
-		|| m_sHoldTableName.empty() || m_sMoneyTableName.empty()) {
+	if (m_sStockBuyTableName.empty() || m_sStockHoldTableName.empty()
+		|| m_sStockHoldTableName.empty() || m_sStockMoneyTableName.empty()) {
 
 		return FALSE;
 	}
@@ -220,20 +220,20 @@ BOOL CStockDBConnection::IsTableNamesValie( void )
 	return TRUE;	
 }
 
-std::string CStockDBConnection::GetActiveTableName( ENUMACTIVETABLE activeTable )
+std::string CDataBaseConnection::GetActiveTableName( ENUMACTIVETABLE activeTable )
 {
 	switch (activeTable) {
-	case ACTIVE_TABLE_BUY:
-		return m_sBuyTableName;
+	case STOCK_TABLE_BUY:
+		return m_sStockBuyTableName;
 		break;
-	case ACTIVE_TABLE_HOLD:
-		return m_sHoldTableName;
+	case STOCK_TABLE_HOLD:
+		return m_sStockHoldTableName;
 		break;
-	case ACTIVE_TABLE_SELL:
-		return m_sSellTableName;
+	case STOCK_TABLE_SELL:
+		return m_sStockSellTableName;
 		break;
-	case ACTIVE_TABLE_MONEY:
-		return m_sMoneyTableName;
+	case STOCK_TABLE_MONEY:
+		return m_sStockMoneyTableName;
 		break;
 	default:
 		return "";
@@ -242,10 +242,10 @@ std::string CStockDBConnection::GetActiveTableName( ENUMACTIVETABLE activeTable 
 	return "";		// Never goes here.
 }
 
-CStockTableDataInfo 
-CStockDBConnection::QueryWholeTableData( ENUMACTIVETABLE whichTable )
+CDBTableDataInfo 
+CDataBaseConnection::QueryWholeTableData( ENUMACTIVETABLE whichTable )
 {
-	CStockTableDataInfo tableDataInfo;
+	CDBTableDataInfo tableDataInfo;
 
 	if (!m_pDatabase || m_nDBStatus != DB_STATUS_OPENED) {
 		tableDataInfo.m_errcode = DB_STATUS_CLOSED;
@@ -293,7 +293,7 @@ CStockDBConnection::QueryWholeTableData( ENUMACTIVETABLE whichTable )
 	return tableDataInfo;
 }
 
-int CStockDBConnection::ReleaseWholeTableData( char** pData )
+int CDataBaseConnection::ReleaseWholeTableData( char** pData )
 {
 	if (!pData)
 		return ERR;
@@ -303,7 +303,7 @@ int CStockDBConnection::ReleaseWholeTableData( char** pData )
 	return OK;
 }
 
-int CStockDBConnection::RemoveRecordByTableId( ENUMACTIVETABLE whichTable, int id )
+int CDataBaseConnection::RemoveRecordByTableId( ENUMACTIVETABLE whichTable, int id )
 {
 	string strTableName = GetActiveTableName(whichTable);
 	if (!m_pDatabase || m_nDBStatus != DB_STATUS_OPENED || strTableName.empty())
@@ -338,9 +338,9 @@ int CStockDBConnection::RemoveRecordByTableId( ENUMACTIVETABLE whichTable, int i
 	return ret;
 }
 
-int CStockDBConnection::InsertBuyRecord( const CStockModelBuy& model )
+int CDataBaseConnection::InsertStockBuyRecord( const CStockModelBuy& model )
 {
-	if (!m_pDatabase || m_sBuyTableName.empty()) {
+	if (!m_pDatabase || m_sStockBuyTableName.empty()) {
 		AfxMessageBox("Cannot insert record into stock_buy table");
 		return ERR;
 	}
@@ -348,7 +348,7 @@ int CStockDBConnection::InsertBuyRecord( const CStockModelBuy& model )
 	string sql("");
 	sql = sql
 		+ " BEGIN TRANSACTION; " 
-		+ " INSERT INTO " + m_sBuyTableName
+		+ " INSERT INTO " + m_sStockBuyTableName
 		+ " (code, name, buy_price, buy_amount, buy_date) "
 		+ " VALUES( "
 		+ " \"" + (LPCTSTR)model.code + "\", "
@@ -376,9 +376,9 @@ int CStockDBConnection::InsertBuyRecord( const CStockModelBuy& model )
 	return ret;
 }
 
-int CStockDBConnection::InsertHoldRecord( const CStockModelHold& model )
+int CDataBaseConnection::InsertStockHoldRecord( const CStockModelHold& model )
 {
-	if (!m_pDatabase || m_sHoldTableName.empty()) {
+	if (!m_pDatabase || m_sStockHoldTableName.empty()) {
 		AfxMessageBox("Cannot insert record into stock_hold table");
 		return ERR;
 	}
@@ -386,7 +386,7 @@ int CStockDBConnection::InsertHoldRecord( const CStockModelHold& model )
 	string sql("");
 	sql = sql
 		+ " BEGIN TRANSACTION; " 
-		+ " INSERT INTO " + m_sHoldTableName
+		+ " INSERT INTO " + m_sStockHoldTableName
 		+ " (code, name, buy_price, hold_cost, hold_amount, even_price, buy_date) "
 		+ " VALUES( "
 		+ " \"" + (LPCTSTR)model.code + "\", "
@@ -416,9 +416,9 @@ int CStockDBConnection::InsertHoldRecord( const CStockModelHold& model )
 	return ret;
 }
 
-int CStockDBConnection::InsertSellRecord( const CStockModelSell& model )
+int CDataBaseConnection::InsertStockSellRecord( const CStockModelSell& model )
 {
-	if (!m_pDatabase || m_sSellTableName.empty()) {
+	if (!m_pDatabase || m_sStockSellTableName.empty()) {
 		AfxMessageBox("Cannot insert record into stock_sell table");
 		return ERR;
 	}
@@ -426,7 +426,7 @@ int CStockDBConnection::InsertSellRecord( const CStockModelSell& model )
 	string sql("");
 	sql = sql
 		+ " BEGIN TRANSACTION; " 
-		+ " INSERT INTO " + m_sSellTableName
+		+ " INSERT INTO " + m_sStockSellTableName
 		+ " (code, name, buy_price, sell_price, sell_amount, "
 		+ " even_price, buy_date, sell_date, each_earn, total_earn) "
 		+ " VALUES( "
@@ -460,7 +460,7 @@ int CStockDBConnection::InsertSellRecord( const CStockModelSell& model )
 	return ret;
 }
 
-int CStockDBConnection::InsertMoneyRecord( const CStockModelMoney& model )
+int CDataBaseConnection::InsertStockMoneyRecord( const CStockModelMoney& model )
 {
 	return 0;
 }
@@ -485,16 +485,23 @@ int StockHoldRecordCallback( void* para, int nCol, char** colValue, char** colNa
 	return OK;
 }
 
-CStockModelHold CStockDBConnection::SelectHoldModelByCode( const char* code )
+int FutureHoldRecordCallback( void* para, int nCol, char** colValue, char** colName )
 {
-	if (!m_pDatabase || m_sHoldTableName.empty() || !code || strlen(code) == 0)
+	int ret = 0;
+
+	return ret;
+}
+
+CStockModelHold CDataBaseConnection::SelectStockHoldModelByCode( const char* code )
+{
+	if (!m_pDatabase || m_sStockHoldTableName.empty() || !code || strlen(code) == 0)
 		return CStockModelHold();
 
 	CStockModelHold holdModel;
 	string sql("");
 	sql = sql 
 		+ "SELECT * FROM "
-		+ m_sHoldTableName
+		+ m_sStockHoldTableName
 		+ " WHERE code = "
 		+ "\"" + code + "\" LIMIT 1;";
 
@@ -516,9 +523,9 @@ CStockModelHold CStockDBConnection::SelectHoldModelByCode( const char* code )
 	return holdModel;
 }
 
-CStockModelHold CStockDBConnection::SelectHoldModelById( int id )
+CStockModelHold CDataBaseConnection::SelectStockHoldModelById( int id )
 {
-	if (!m_pDatabase || m_sHoldTableName.empty() || id <= 0)
+	if (!m_pDatabase || m_sStockHoldTableName.empty() || id <= 0)
 		return CStockModelHold();
 
 	char idStr[10] = "";
@@ -528,7 +535,7 @@ CStockModelHold CStockDBConnection::SelectHoldModelById( int id )
 	string sql("");
 	sql = sql 
 		+ "SELECT * FROM "
-		+ m_sHoldTableName
+		+ m_sStockHoldTableName
 		+ " WHERE id = "
 		+ "\"" + idStr + "\" LIMIT 1;";
 
@@ -550,9 +557,9 @@ CStockModelHold CStockDBConnection::SelectHoldModelById( int id )
 	return holdModel;
 }
 
-int CStockDBConnection::UpdateHoldModel( const CStockModelHold& model )
+int CDataBaseConnection::UpdateStockHoldModel( const CStockModelHold& model )
 {
-	if (!m_pDatabase || m_sHoldTableName.empty()) {
+	if (!m_pDatabase || m_sStockHoldTableName.empty()) {
 		AfxMessageBox("Cannot update record in stock_hold table");
 		return ERR;
 	}
@@ -563,7 +570,7 @@ int CStockDBConnection::UpdateHoldModel( const CStockModelHold& model )
 	string sql("");
 	sql = sql
 		+ " BEGIN TRANSACTION; " 
-		+ " UPDATE " + m_sHoldTableName
+		+ " UPDATE " + m_sStockHoldTableName
 		+ " SET code = " + "\"" + (LPCTSTR)model.code + "\", "
 		+ " name = " + "\"" + (LPCTSTR)model.name + "\", "
 		+ " buy_price = " + "\"" + (LPCTSTR)model.buy_price + "\", "
@@ -591,9 +598,9 @@ int CStockDBConnection::UpdateHoldModel( const CStockModelHold& model )
 	return ret;
 }
 
-int CStockDBConnection::UpdateSellTotalEarn( void )
+int CDataBaseConnection::UpdateStockSellTotalEarn( void )
 {
-	if (!m_pDatabase || m_sSellTableName.empty()) {
+	if (!m_pDatabase || m_sStockSellTableName.empty()) {
 		AfxMessageBox("Cannot update record in stock_sell table");
 		return ERR;
 	}
@@ -601,9 +608,9 @@ int CStockDBConnection::UpdateSellTotalEarn( void )
 	string sql ("");
 	sql = sql 
 		+ " BEGIN TRANSACTION; " 
-		+ " UPDATE " + m_sSellTableName
-		+ " SET total_earn = (SELECT SUM(each_earn) FROM " + m_sSellTableName + ")"
-		+ " WHERE id = (SELECT id FROM " + m_sSellTableName + " LIMIT 1);"
+		+ " UPDATE " + m_sStockSellTableName
+		+ " SET total_earn = (SELECT SUM(each_earn) FROM " + m_sStockSellTableName + ")"
+		+ " WHERE id = (SELECT id FROM " + m_sStockSellTableName + " LIMIT 1);"
 		+ " END TRANSACTION; ";
 
 	char* errmsg = NULL;
@@ -625,7 +632,7 @@ int CStockDBConnection::UpdateSellTotalEarn( void )
 
 
 // TODO: Create tables if db doesnot exist.
-int CStockDBConnection::InitDatabaseFutureTables( void )
+int CDataBaseConnection::InitDatabaseFutureTables( void )
 {
 	int ret = 0;
 

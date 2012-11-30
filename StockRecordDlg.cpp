@@ -227,16 +227,16 @@ void CStockRecordDlg::SetLeftTopItemData( void )
 	string str("");
 
 	switch (m_dbConn.GetActiveTable()) {
-	case ACTIVE_TABLE_BUY:
+	case STOCK_TABLE_BUY:
 		str.assign("BUY");
 		break;
-	case ACTIVE_TABLE_HOLD:
+	case STOCK_TABLE_HOLD:
 		str.assign("HOLD");
 		break;
-	case ACTIVE_TABLE_SELL:
+	case STOCK_TABLE_SELL:
 		str.assign("SELL");
 		break;
-	case ACTIVE_TABLE_MONEY:
+	case STOCK_TABLE_MONEY:
 		str.assign("MONEY");
 		break;
 	default:
@@ -257,16 +257,16 @@ void CStockRecordDlg::SetLeftTopItemData( void )
 void CStockRecordDlg::ClearRecordIds( void )
 {
 	switch (m_dbConn.GetActiveTable()) {
-	case ACTIVE_TABLE_BUY:
+	case STOCK_TABLE_BUY:
 		m_vecStockBuyIds.clear();
 		break;
-	case ACTIVE_TABLE_HOLD:
+	case STOCK_TABLE_HOLD:
 		m_vecStockHoldIds.clear();
 		break;
-	case ACTIVE_TABLE_SELL:
+	case STOCK_TABLE_SELL:
 		m_vecStockSellIds.clear();
 		break;
-	case ACTIVE_TABLE_MONEY:
+	case STOCK_TABLE_MONEY:
 		m_vecStockMoneyIds.clear();
 		break;
 	default:
@@ -277,16 +277,16 @@ void CStockRecordDlg::ClearRecordIds( void )
 void CStockRecordDlg::StoreRecordId( int id )
 {
 	switch (m_dbConn.GetActiveTable()) {
-	case ACTIVE_TABLE_BUY:
+	case STOCK_TABLE_BUY:
 		m_vecStockBuyIds.push_back(id);
 		break;
-	case ACTIVE_TABLE_HOLD:
+	case STOCK_TABLE_HOLD:
 		m_vecStockHoldIds.push_back(id);
 		break;
-	case ACTIVE_TABLE_SELL:
+	case STOCK_TABLE_SELL:
 		m_vecStockSellIds.push_back(id);
 		break;
-	case ACTIVE_TABLE_MONEY:
+	case STOCK_TABLE_MONEY:
 		m_vecStockMoneyIds.push_back(id);
 		break;
 	default:
@@ -308,11 +308,11 @@ CStockRecordDlg::SetGridData( int nRowCount, int nColCount, char** result )
 		m_GridCtrl.DeleteAllItems();
 		m_GridCtrl.ShowWindow(SW_HIDE);
 
-		if (m_dbConn.GetActiveTable() == ACTIVE_TABLE_BUY) {
+		if (m_dbConn.GetActiveTable() == STOCK_TABLE_BUY) {
 			if (MessageBox("没有记录，是否要增加记录？", "Confirm", MB_YESNO) == IDYES) {
 				OnStockbuyAdd();
 			}
-		} else if (m_dbConn.GetActiveTable() == ACTIVE_TABLE_MONEY) {
+		} else if (m_dbConn.GetActiveTable() == STOCK_TABLE_MONEY) {
 			if (MessageBox("没有记录，是否要增加记录？", "Confirm", MB_YESNO) == IDYES) {
 				OnStockmoneyInout();
 			}
@@ -358,7 +358,7 @@ CStockRecordDlg::SetGridData( int nRowCount, int nColCount, char** result )
 		strOutName = FieldNamesMap::GetChNameByEnName(data);
 		m_GridCtrl.SetItemText(0, colIdx, strOutName.c_str());
 		if (string::npos != strOutName.find(_T("保本价格"))
-			&& m_dbConn.GetActiveTable() == ACTIVE_TABLE_HOLD) {
+			&& m_dbConn.GetActiveTable() == STOCK_TABLE_HOLD) {
 			m_GridCtrl.SetColumnTextClrWithoutFixedCells(colIdx, RGB(0xFF, 0x00, 0x00));
 		}
 
@@ -424,7 +424,7 @@ CStockRecordDlg::SetGridData( int nRowCount, int nColCount, char** result )
 int CStockRecordDlg::GetAndShowTableData(ENUMACTIVETABLE whichTable)
 {
 	m_dbConn.SetActiveTable(whichTable);
-	CStockTableDataInfo tableDataInfo = 
+	CDBTableDataInfo tableDataInfo = 
 		m_dbConn.QueryWholeTableData(whichTable);
 	SetGridData(tableDataInfo.m_nRow, tableDataInfo.m_nCol, tableDataInfo.m_pData);
 	m_dbConn.ReleaseWholeTableData(tableDataInfo.m_pData);
@@ -437,16 +437,16 @@ int CStockRecordDlg::ReloadRecords( void )
 
 	switch (m_dbConn.GetActiveTable()) {
 
-	case ACTIVE_TABLE_BUY:
+	case STOCK_TABLE_BUY:
 		OnMenuBuyRecord();
 		break;
-	case ACTIVE_TABLE_HOLD:
+	case STOCK_TABLE_HOLD:
 		OnMenuHoldRecord();
 		break;
-	case ACTIVE_TABLE_SELL:
+	case STOCK_TABLE_SELL:
 		OnMenuSellRecord();
 		break;
-	case ACTIVE_TABLE_MONEY:
+	case STOCK_TABLE_MONEY:
 		OnMenuMoneyRecord();
 		break;
 	default:
@@ -459,10 +459,10 @@ int CStockRecordDlg::ReloadRecords( void )
 int CStockRecordDlg::SetupDBTableNames(void)
 {
 	m_dbConn.SetDatabaseName("StockRecord.db");
-	m_dbConn.SetBuyTableName("stock_buy");
-	m_dbConn.SetHoldTableName("stock_hold");
-	m_dbConn.SetSellTableName("stock_sell");
-	m_dbConn.SetMoneyTableName("stock_money");
+	m_dbConn.SetStockBuyTableName("stock_buy");
+	m_dbConn.SetStockHoldTableName("stock_hold");
+	m_dbConn.SetStockSellTableName("stock_sell");
+	m_dbConn.SetStockMoneyTableName("stock_money");
 	return OK;
 }
 
@@ -482,33 +482,33 @@ void CStockRecordDlg::OnDestroy()
 void CStockRecordDlg::OnMenuHoldRecord()
 {
 	SetWindowText("Stock - Hold Record");
-	m_dbConn.SetActiveTable(ACTIVE_TABLE_HOLD);
+	m_dbConn.SetActiveTable(STOCK_TABLE_HOLD);
 	MakeMenuItemCheckedByActiveTable();		
-	GetAndShowTableData(ACTIVE_TABLE_HOLD);
+	GetAndShowTableData(STOCK_TABLE_HOLD);
 }
 
 void CStockRecordDlg::OnMenuBuyRecord()
 {
 	SetWindowText("Stock - Buy Record");
-	m_dbConn.SetActiveTable(ACTIVE_TABLE_BUY);
+	m_dbConn.SetActiveTable(STOCK_TABLE_BUY);
 	MakeMenuItemCheckedByActiveTable();
-	GetAndShowTableData(ACTIVE_TABLE_BUY);
+	GetAndShowTableData(STOCK_TABLE_BUY);
 }
 
 void CStockRecordDlg::OnMenuSellRecord()
 {
 	SetWindowText("Stock - Sell Record");
-	m_dbConn.SetActiveTable(ACTIVE_TABLE_SELL);
+	m_dbConn.SetActiveTable(STOCK_TABLE_SELL);
 	MakeMenuItemCheckedByActiveTable();
-	GetAndShowTableData(ACTIVE_TABLE_SELL);
+	GetAndShowTableData(STOCK_TABLE_SELL);
 }
 
 void CStockRecordDlg::OnMenuMoneyRecord()
 {
 	SetWindowText("Stock - Money Record");
-	m_dbConn.SetActiveTable(ACTIVE_TABLE_MONEY);
+	m_dbConn.SetActiveTable(STOCK_TABLE_MONEY);
 	MakeMenuItemCheckedByActiveTable();
-	GetAndShowTableData(ACTIVE_TABLE_MONEY);
+	GetAndShowTableData(STOCK_TABLE_MONEY);
 }
 
 void CStockRecordDlg::OnBnClickedExit()
@@ -542,23 +542,23 @@ void CStockRecordDlg::OnGridRClick( NMHDR *pNotifyStruct, LRESULT* pResult )
 
 	/* Get related submenu according to current opened table */
 	switch (m_dbConn.GetActiveTable()) {
-	case ACTIVE_TABLE_BUY:
+	case STOCK_TABLE_BUY:
 		popupMenu = menu.GetSubMenu(0);
 		if (!isRClickOnDataCell)
 			popupMenu->DeleteMenu(IDM_STOCKBUY_REMOVE, MF_BYCOMMAND);
 		break;
 
-	case ACTIVE_TABLE_HOLD:
+	case STOCK_TABLE_HOLD:
 		if (isRClickOnDataCell)
 			popupMenu = menu.GetSubMenu(1);
 		break;
 
-	case ACTIVE_TABLE_SELL:
+	case STOCK_TABLE_SELL:
 		if (isRClickOnDataCell)
 			popupMenu = menu.GetSubMenu(2);
 		break;
 
-	case ACTIVE_TABLE_MONEY:
+	case STOCK_TABLE_MONEY:
 		popupMenu = menu.GetSubMenu(3);
 		if (!isRClickOnDataCell) {
 			popupMenu->DeleteMenu(IDM_STOCKMONEY_REMOVE, MF_BYCOMMAND);
@@ -594,9 +594,9 @@ void CStockRecordDlg::OnGridDBClick( NMHDR *pNotifyStruct, LRESULT* pResult )
 		return ;
 	}
 	
-	if (m_dbConn.GetActiveTable() == ACTIVE_TABLE_HOLD)
+	if (m_dbConn.GetActiveTable() == STOCK_TABLE_HOLD)
 		OnStockholdPlanSell();
-	else if (m_dbConn.GetActiveTable() == ACTIVE_TABLE_BUY)
+	else if (m_dbConn.GetActiveTable() == STOCK_TABLE_BUY)
 		OnStockbuyAdd();
 }
 
@@ -614,28 +614,28 @@ int CStockRecordDlg::GetActiveRecordIdBySeqNo( int seqNo )
 
 	switch (m_dbConn.GetActiveTable()) {
 
-	case ACTIVE_TABLE_BUY:
+	case STOCK_TABLE_BUY:
 		if (m_vecStockBuyIds.empty() || seqNo > (int)m_vecStockBuyIds.size())
 			return -1;
 		else
 			id = m_vecStockBuyIds.at(seqNo - 1);
 		break;
 
-	case ACTIVE_TABLE_HOLD:
+	case STOCK_TABLE_HOLD:
 		if (m_vecStockHoldIds.empty() || seqNo > (int)m_vecStockHoldIds.size())
 			return -1;
 		else
 			id = m_vecStockHoldIds.at(seqNo - 1);
 		break;
 
-	case ACTIVE_TABLE_SELL:
+	case STOCK_TABLE_SELL:
 		if (m_vecStockSellIds.empty() || seqNo > (int)m_vecStockSellIds.size())
 			return -1;
 		else
 			id = m_vecStockSellIds.at(seqNo - 1);
 		break;
 
-	case ACTIVE_TABLE_MONEY:
+	case STOCK_TABLE_MONEY:
 		if (m_vecStockMoneyIds.empty() || seqNo > (int)m_vecStockMoneyIds.size())
 			return -1;
 		else
@@ -765,7 +765,7 @@ void CStockRecordDlg::OnStockbuyAdd()
 	/* 2. Insert record into stock_buy table */
 	if (buyModel.GetEncodeStyle() == ENCODE_STYLE_GB2312)
 		buyModel.ConvertEncodeFormat(ENCODE_STYLE_UTF8);
-	ret = m_dbConn.InsertBuyRecord(buyModel);
+	ret = m_dbConn.InsertStockBuyRecord(buyModel);
 
 	/* 3. Convert buy model into hold model to prepare to insert. */
 	CStockModelHold holdModel = ConvertBuyModelToHoldModel(buyModel);
@@ -774,9 +774,9 @@ void CStockRecordDlg::OnStockbuyAdd()
 	if (holdModel.GetEncodeStyle() == ENCODE_STYLE_GB2312)
 		holdModel.ConvertEncodeFormat(ENCODE_STYLE_UTF8);
 	if (holdModel.id < 0) /* No same record in stock_hold, insert a new one */
-		ret = m_dbConn.InsertHoldRecord(holdModel);
+		ret = m_dbConn.InsertStockHoldRecord(holdModel);
 	else	/* same record exists in stock_hold, update it */
-		ret = m_dbConn.UpdateHoldModel(holdModel);
+		ret = m_dbConn.UpdateStockHoldModel(holdModel);
 
 	/* 5. Reload records. */
 	ReloadRecords();
@@ -796,7 +796,7 @@ void CStockRecordDlg::OnStockholdSell()
 {
 	/* 1. Query the hold record according to the focused cell's row. */
 	int id = GetActiveRecordIdBySeqNo(m_GridCtrl.GetFocusCell().row);
-	CStockModelHold holdModel = m_dbConn.SelectHoldModelById(id);
+	CStockModelHold holdModel = m_dbConn.SelectStockHoldModelById(id);
 
 	/* 2. Popup sell stock dialog with appropriate values. */
 	if (holdModel.GetEncodeStyle() == ENCODE_STYLE_UTF8)
@@ -821,8 +821,8 @@ void CStockRecordDlg::OnStockholdSell()
 	CStockModelSell sellModel = ConvertToSellModel(holdModel, sellDlg);
 	if (sellModel.GetEncodeStyle() == ENCODE_STYLE_GB2312)
 		sellModel.ConvertEncodeFormat(ENCODE_STYLE_UTF8);
-	int ret = m_dbConn.InsertSellRecord(sellModel);
-	ret = m_dbConn.UpdateSellTotalEarn();
+	int ret = m_dbConn.InsertStockSellRecord(sellModel);
+	ret = m_dbConn.UpdateStockSellTotalEarn();
 
 	/* 4.1 If all of held stock is sold, delete record in stock_hold. 
 	 * Comment this, because we don't delete the record now. */
@@ -845,7 +845,7 @@ void CStockRecordDlg::OnStockholdSell()
 
 		if (holdModel.GetEncodeStyle() == ENCODE_STYLE_GB2312)
 			holdModel.ConvertEncodeFormat(ENCODE_STYLE_UTF8);
-		ret = m_dbConn.UpdateHoldModel(holdModel);
+		ret = m_dbConn.UpdateStockHoldModel(holdModel);
 	}
 
 	ReloadRecords();
@@ -894,7 +894,7 @@ CStockRecordDlg::ConvertBuyModelToHoldModel( const CStockModelBuy& buyModel )
 	 * be the actual id value in the database.
 	 */
 	CStockModelHold holdModel;
-	holdModel = m_dbConn.SelectHoldModelByCode((LPCTSTR)buyModel.code);
+	holdModel = m_dbConn.SelectStockHoldModelByCode((LPCTSTR)buyModel.code);
 	/* If stock_hold doesn't have the same record, its id is -1. */
 	bool isHoldTableHasSameStock = holdModel.id <= 0 ? false : true;
 	
@@ -986,16 +986,16 @@ void CStockRecordDlg::MakeMenuItemCheckedByActiveTable(void)
 
 	/* Make active table menu item checked */
 	switch (m_dbConn.GetActiveTable()) {
-	case ACTIVE_TABLE_BUY:
+	case STOCK_TABLE_BUY:
 		GetMenu()->GetSubMenu(0)->CheckMenuItem(ID_MENU_BUY_RECORD, MF_CHECKED);
 		break;
-	case ACTIVE_TABLE_HOLD:
+	case STOCK_TABLE_HOLD:
 		GetMenu()->GetSubMenu(0)->CheckMenuItem(ID_MENU_HOLD_RECORD, MF_CHECKED);
 		break;
-	case ACTIVE_TABLE_SELL:
+	case STOCK_TABLE_SELL:
 		GetMenu()->GetSubMenu(0)->CheckMenuItem(ID_MENU_SELL_RECORD, MF_CHECKED);
 		break;
-	case ACTIVE_TABLE_MONEY:
+	case STOCK_TABLE_MONEY:
 		GetMenu()->GetSubMenu(0)->CheckMenuItem(ID_MENU_MONEY_RECORD, MF_CHECKED);
 		break;
 	default:
@@ -1179,7 +1179,7 @@ void CStockRecordDlg::OnStockholdPlanbuy()
 {
 	/* 1. Query the hold record according to the focused cell's row. */
 	int id = GetActiveRecordIdBySeqNo(m_GridCtrl.GetFocusCell().row);
-	CStockModelHold holdModel = m_dbConn.SelectHoldModelById(id);
+	CStockModelHold holdModel = m_dbConn.SelectStockHoldModelById(id);
 	if (holdModel.GetEncodeStyle() == ENCODE_STYLE_UTF8)
 		holdModel.ConvertEncodeFormat(ENCODE_STYLE_GB2312);
 
