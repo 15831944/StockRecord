@@ -103,7 +103,7 @@ public:
 	CStockModelHold SelectStockHoldModelByCode(const char* code);
 	CStockModelHold SelectStockHoldModelById(int id);
 	int UpdateStockHoldModel(const CStockModelHold& holdModel);
-	int UpdateStockSellTotalEarn(void);
+	int UpdateStockSellTotalEarn(string strEachValue);
 
 
 	/************************************************************************/

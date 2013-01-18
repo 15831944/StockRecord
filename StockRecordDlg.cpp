@@ -822,7 +822,7 @@ void CStockRecordDlg::OnStockholdSell()
 	if (sellModel.GetEncodeStyle() == ENCODE_STYLE_GB2312)
 		sellModel.ConvertEncodeFormat(ENCODE_STYLE_UTF8);
 	int ret = m_dbConn.InsertStockSellRecord(sellModel);
-	ret = m_dbConn.UpdateStockSellTotalEarn();
+	ret = m_dbConn.UpdateStockSellTotalEarn((LPCTSTR)sellModel.each_earn);
 
 	/* 4.1 If all of held stock is sold, delete record in stock_hold. 
 	 * Comment this, because we don't delete the record now. */

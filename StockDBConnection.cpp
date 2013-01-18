@@ -598,7 +598,14 @@ int CDataBaseConnection::UpdateStockHoldModel( const CStockModelHold& model )
 	return ret;
 }
 
-int CDataBaseConnection::UpdateStockSellTotalEarn( void )
+/**
+ *	Update total_earn value just on the first record.
+ *  Just add origin total_earn and new inserted record's each_earn.
+ *  @strValue - Contains the value of new inserted record's each_earn.
+ *  Value of @strValue will not be checked here, so make sure the passed
+ *  @strValue has the correct value, which should be a float number.
+ */
+int CDataBaseConnection::UpdateStockSellTotalEarn( string strValue )
 {
 	if (!m_pDatabase || m_sStockSellTableName.empty()) {
 		AfxMessageBox("Cannot update record in stock_sell table");
@@ -609,7 +616,7 @@ int CDataBaseConnection::UpdateStockSellTotalEarn( void )
 	sql = sql 
 		+ " BEGIN TRANSACTION; " 
 		+ " UPDATE " + m_sStockSellTableName
-		+ " SET total_earn = (SELECT SUM(each_earn) FROM " + m_sStockSellTableName + ")"
+		+ " SET total_earn = (SELECT total_earn FROM " + m_sStockSellTableName + ") + " + strValue
 		+ " WHERE id = (SELECT id FROM " + m_sStockSellTableName + " LIMIT 1);"
 		+ " END TRANSACTION; ";
 
